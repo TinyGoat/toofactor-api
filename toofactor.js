@@ -32,11 +32,14 @@ function record_token(token) {
 // Customer, customer what do you hear..
 //
 function customer_lookup(match) {
-    if (match=="api" ) {
-        return tokenize();
-   } else {
-        return "Incorrect API key.";
+    client.get("api", function(error, response) { 
+    if (response) {
+        return "foo";
+    } else {
+        return "bar";
     }
+    
+    });
 }
 
 // Hey, ho, let's go!
