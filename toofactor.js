@@ -19,16 +19,23 @@ function tokenize() {
         token = Math.floor(Math.random()*16).toString(16)
         output = output + " " + token
     }
+    // record_token(output);
     return output
 }
 
-// Customer?
+// Write generated token for auth purposes
+//
+function record_token(token) {
+    client.set(match, token);
+}
+
+// Customer, customer what do you hear..
 //
 function customer_lookup(match) {
-    if (client.get(match)) {
+    if (match=="api" ) {
         return tokenize();
    } else {
-        return "";
+        return "Incorrect API key.";
     }
 }
 
@@ -42,7 +49,7 @@ server.get("/", function (req, res, match) {
 //
 server.get(new RegExp("^/(.*)$"), function hello(req, res, match) {
 	return customer_lookup(match);
-	 res.end();
+	response.end();
 });
 
 // Go, go gadget Node
