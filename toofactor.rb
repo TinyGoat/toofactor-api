@@ -1,3 +1,6 @@
+# Sinatra is for closers
+#
+require 'sinatra'
 
 # Token routines
 #
@@ -10,6 +13,7 @@ end
 # token length per customer
 #
 def tokenize(min, max, token)
+  token = ""
   (min..max).each do 
     token = token + gen_hex + " "
   end
@@ -18,4 +22,10 @@ end
 
 # It rubs the lotion on it's skin
 #
-puts tokenize(0, 7, "")
+#uts tokenize(0, 7, "")
+
+# Route me harder
+#
+get %r{/api/([\w]+)} do |match|
+  tokenize(0, 7, "#{match}")
+end
