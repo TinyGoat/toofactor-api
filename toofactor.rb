@@ -17,11 +17,11 @@ require 'builder'
 # Ho, ho, ho
 #
 require 'haml'
-  
+
 # Ruby dudes are all about class baby
 # 
 class TooFactor < Sinatra::Application
-
+  
   # Everything is a hash
   # 
   require "redis"
@@ -70,30 +70,42 @@ class TooFactor < Sinatra::Application
   #
   get %r{/api/([\w]+)/$} do |match|
     confirm = "#{match}"
-    if ($redis.exists confirm)
-      tstamp = Time.now.to_i
-      cookies[:TooFactor] = match,tstamp
-      cmatch = customer_match("#{match}")
-      json_token(cmatch, tstamp)
+    confirm.freeze
+    begin
+      if ($redis.exists confirm)
+        tstamp = Time.now.to_i
+        cookies[:TooFactor] = match,tstamp
+        cmatch = customer_match("#{match}")
+        json_token(cmatch, tstamp)
+      else
+        haml :nomatch
+      end
+    rescue
+      haml :eek
     end
   end
 
   get %r{/api/([\w]+)/([\w]+)} do |match,type|
     confirm = "#{match}"
-    if ($redis.exists confirm)
-      tstamp = Time.now.to_i
-      cookies[:TooFactor] = match,tstamp
-      cmatch = customer_match("#{match}")
-      case type
-        when "json"
-          json_token(cmatch, tstamp)
-        when "xml"
-          xml_token(cmatch, tstamp)
-        else
-          json_token(cmatch, tstamp)
-      end    
-    else
-      haml :nomatch
+    confirm.freeze
+    begin 
+      if ($redis.exists confirm)
+        tstamp = Time.now.to_i
+        cookies[:TooFactor] = match,tstamp
+        cmatch = customer_match("#{match}")
+        case type
+          when "json"
+            json_token(cmatch, tstamp)
+          when "xml"
+            xml_token(cmatch, tstamp)
+          else
+            json_token(cmatch, tstamp)
+        end    
+      else
+        haml :nomatch
+      end
+    rescue
+      haml :eek
     end
   end
 
