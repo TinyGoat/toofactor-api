@@ -1,2 +1,3 @@
 require './toofactor'
-run Sinatra::Application
+use Rack::ShowExceptions
+run TooFactor.new
