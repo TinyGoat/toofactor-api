@@ -7,14 +7,15 @@ require 'sinatra'
   set :static, true
   set :public_folder, 'public'
 
-# Ruby dudes are allow about class baby
+# Ruby dudes are all about class baby
 # 
 class TooFactor < Sinatra::Application
 
   # Everything is a hash
   # 
   require "redis"
-
+  $redis = Redis.new 
+  
   # Ho, ho, ho
   #
   require 'haml'
@@ -38,9 +39,8 @@ class TooFactor < Sinatra::Application
   end
 
   def customer_match(match)
-    redis = Redis.new
-    if (redis.exists match)
-      customer = redis.get match
+    if ($redis.exists match)
+      customer = $redis.get match
       return tokenize(0, 7, customer)
     else
       haml :nomatch
