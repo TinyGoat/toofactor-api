@@ -32,13 +32,9 @@ function record_token(token) {
 // Customer, customer what do you hear..
 //
 function customer_lookup(match) {
-    client.get("api", function(error, response) { 
-    if (response) {
-        return "foo";
-    } else {
-        return "bar";
-    }
-    
+    client.get([match], function (err, res) {
+        return console.dir(res);
+        response.write(tokenize(res));
     });
 }
 

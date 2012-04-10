@@ -1,6 +1,11 @@
 # Sinatra is for closers
 #
 require 'sinatra'
+  set :sessions, true
+  set :logging, true
+  set :dump_errors, true
+  set :static, true
+  set :public_folder, 'public/'
 
 # Token routines
 #
@@ -19,10 +24,6 @@ def tokenize(min, max, token)
   end
   return token
 end
-
-# It rubs the lotion on it's skin
-#
-#uts tokenize(0, 7, "")
 
 # Route me harder
 #
