@@ -73,7 +73,7 @@ class TooFactor < Sinatra::Application
     confirm.freeze
     begin
       if ($redis.exists confirm)
-        tstamp = Time.now.to_i
+        tstamp = Time.now.to_f
         cookies[:TooFactor] = match,tstamp
         cmatch = customer_match("#{match}")
         json_token(cmatch, tstamp)
@@ -90,7 +90,7 @@ class TooFactor < Sinatra::Application
     confirm.freeze
     begin 
       if ($redis.exists confirm)
-        tstamp = Time.now.to_i
+        tstamp = Time.now.to_f
         cookies[:TooFactor] = match,tstamp
         cmatch = customer_match("#{match}")
         case type
