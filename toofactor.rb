@@ -8,9 +8,16 @@ require 'sinatra'
   set :public_folder, 'public'
 
 require 'sinatra/cookies'
+
+# Gemmy, gem, gem
+#
 require 'json'
 require 'builder'
 
+# Ho, ho, ho
+#
+require 'haml'
+  
 # Ruby dudes are all about class baby
 # 
 class TooFactor < Sinatra::Application
@@ -20,10 +27,6 @@ class TooFactor < Sinatra::Application
   require "redis"
   $redis = Redis.new 
   
-  # Ho, ho, ho
-  #
-  require 'haml'
-
   # Token routines
   #
   def gen_hex
@@ -47,6 +50,16 @@ class TooFactor < Sinatra::Application
     return tokenize(0, 7, customer)
   end
 
+  def json_token(cmatch, tstamp)
+    content_type :json
+    { :auth => cmatch, :timestamp => tstamp }.to_json
+  end
+
+  def xml_token(cmatch, tstamp)
+    xml = Builder::XmlMarkup.new
+    xml.token { |b| b.auth(cmatch); b.timestamp(tstamp) }
+  end
+
   # Move along son
   #
   get '/' do
@@ -55,19 +68,30 @@ class TooFactor < Sinatra::Application
 
   # Route me harder
   #
+  get %r{/api/([\w]+)/$} do |match|
+    confirm = "#{match}"
+    if ($redis.exists confirm)
+      tstamp = Time.now.to_i
+      cookies[:TooFactor] = match,tstamp
+      cmatch = customer_match("#{match}")
+      json_token(cmatch, tstamp)
+    end
+  end
+
   get %r{/api/([\w]+)/([\w]+)} do |match,type|
     confirm = "#{match}"
     if ($redis.exists confirm)
       tstamp = Time.now.to_i
       cookies[:TooFactor] = match,tstamp
       cmatch = customer_match("#{match}")
-      if (type == "json")
-        content_type :json
-        { :auth => cmatch, :timestamp => tstamp }.to_json
-      elsif (type == "xml")
-        xml = Builder::XmlMarkup.new
-        xml.token { |b| b.auth(cmatch); b.timestamp(tstamp) }
-      end
+      case type
+        when "json"
+          json_token(cmatch, tstamp)
+        when "xml"
+          xml_token(cmatch, tstamp)
+        else
+          json_token(cmatch, tstamp)
+      end    
     else
       haml :nomatch
     end
