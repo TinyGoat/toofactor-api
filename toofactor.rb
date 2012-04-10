@@ -7,6 +7,10 @@ require 'sinatra'
   set :static, true
   set :public_folder, 'public'
 
+require 'sinatra/cookies'
+require 'json'
+require 'builder'
+
 # Ruby dudes are all about class baby
 # 
 class TooFactor < Sinatra::Application
@@ -33,30 +37,40 @@ class TooFactor < Sinatra::Application
   def tokenize(min, max, token)
     token = ""
     (min..max).each do 
-      token = token + gen_hex + " "
+      token = token + gen_hex
     end
     return token
   end
 
   def customer_match(match)
-    if ($redis.exists match)
-      customer = $redis.get match
-      return tokenize(0, 7, customer)
-    else
-      haml :nomatch
-    end
+    customer = $redis.get match
+    return tokenize(0, 7, customer)
   end
 
   # Move along son
   #
   get '/' do
-    "Nobody puts baby in the corner!"
+    haml :root
   end
 
   # Route me harder
   #
-  get %r{/api/([\w]+)} do |match|
-    customer_match("#{match}")
+  get %r{/api/([\w]+)/([\w]+)} do |match,type|
+    confirm = "#{match}"
+    if ($redis.exists confirm)
+      tstamp = Time.now.to_i
+      cookies[:TooFactor] = match,tstamp
+      cmatch = customer_match("#{match}")
+      if (type == "json")
+        content_type :json
+        { :auth => cmatch, :timestamp => tstamp }.to_json
+      elsif (type == "xml")
+        xml = Builder::XmlMarkup.new
+        xml.token { |b| b.auth(cmatch); b.timestamp(tstamp) }
+      end
+    else
+      haml :nomatch
+    end
   end
 
 end
