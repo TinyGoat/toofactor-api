@@ -5,18 +5,27 @@ require 'sinatra'
   set :logging, true
   set :dump_errors, true
   set :static, true
+  set :static_cache_control, [:private, :max_age => 60]
   set :public_folder, 'public'
 
-require 'sinatra/cookies'
-
-# Gemmy, gem, gem
-#
 require 'json'
 require 'builder'
-
-# Ho, ho, ho
-#
 require 'haml'
+require 'sinatra/cookies'
+require 'rack/cache'
+
+configure :production do
+  sha1, date = `git log HEAD~1..HEAD --pretty=format:%h^%ci`.strip.split('^')
+  
+  require 'rack/cache'
+  use Rack::Cache
+
+  before do
+    cache_control :public, :must_revalidate, :max_age=>300
+    etag sha1
+    last_modified date
+  end
+end
 
 # Ruby dudes are all about class baby
 # 
@@ -74,7 +83,7 @@ class TooFactor < Sinatra::Application
     begin
       if ($redis.exists confirm)
         tstamp = Time.now.to_f
-        cookies[:TooFactor] = match,tstamp
+        cookies[:TooFactor] = tstamp
         cmatch = customer_match("#{match}")
         json_token(cmatch, tstamp)
       else
@@ -91,7 +100,7 @@ class TooFactor < Sinatra::Application
     begin 
       if ($redis.exists confirm)
         tstamp = Time.now.to_f
-        cookies[:TooFactor] = match,tstamp
+        cookies[:TooFactor] = tstamp
         cmatch = customer_match("#{match}")
         case type
           when "json"
@@ -107,6 +116,16 @@ class TooFactor < Sinatra::Application
     rescue
       haml :eek
     end
+  end
+
+  # Finding Godot
+  #
+  not_found do
+      haml :notfound
+  end
+
+  error do
+      'Sorry there was a nasty error - ' + env['sinatra.error'].name
   end
 
 end
