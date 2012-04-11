@@ -1,5 +1,31 @@
-%h1 
-    Something went wrong!
+!!! 5
+%html(lang="en")
+  %head
+    %title Toofactor :: Sane Authentication in a Crazy World
+    %link{:rel => 'stylesheet', :href => '/bootstrap.css', :type => "text/css"}
+    %link{:rel => 'stylesheet', :href => '/launch.css', :type => "text/css"}
 
-%p
-    We can't find that API.
+  %body
+    .topbar
+      .fill
+        .container
+          %a{:class => "brand", :href => ""}TooFactor
+          %ul(class="nav")
+            %li
+              %a(href = "/") Home
+            %li
+              %a(href = "/") About
+            %li
+              %a(href = "/") Contact
+
+    .container
+      .content
+        .page-header
+        .row
+          .span10
+            <p>Sorry, can't find that API. We've logged this error.</p>
+
+
+
+      %footer
+        <p>&copy; TooFactor 2012</p>
