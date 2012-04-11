@@ -14,6 +14,7 @@ require 'haml'
 require 'sinatra/cookies'
 
 configure :production do
+
   sha1, date = `git log HEAD~1..HEAD --pretty=format:%h^%ci`.strip.split('^')
   
   require 'rack/cache'
@@ -29,14 +30,22 @@ end
 # Ruby dudes are all about class baby
 # 
 class TooFactor < Sinatra::Application
-  
+ 
+  redis_host = "127.0.0.1"
+
   # Everything is a hash
   # 
   require "redis"
-  $redis = Redis.new 
-  
-  # Token routines
-  #
+  $redis = Redis.new(:host => redis_host, :port => 6379) 
+
+  def customer?(confirm)
+    $redis.exists confirm
+  end
+
+  def log_api(customer)
+    $redis.incr customer
+  end
+
   def gen_hex
     prng = Random.new
     prng.rand(0..15).to_s(base=16)
@@ -48,13 +57,14 @@ class TooFactor < Sinatra::Application
   def tokenize(min, max, token)
     token = ""
     (min..max).each do 
-      token = token + gen_hex
+    token = token + gen_hex
     end
     return token
   end
 
   def customer_match(match)
     customer = $redis.get match
+    log_api(match)
     return tokenize(0, 7, customer)
   end
 
@@ -80,7 +90,7 @@ class TooFactor < Sinatra::Application
     confirm = "#{match}"
     confirm.freeze
     begin
-      if ($redis.exists confirm)
+      if (customer?(confirm))
         tstamp = Time.now.to_f
         cookies[:TooFactor] = tstamp
         cmatch = customer_match("#{match}")
@@ -97,7 +107,7 @@ class TooFactor < Sinatra::Application
     confirm = "#{match}"
     confirm.freeze
     begin 
-      if ($redis.exists confirm)
+      if (customer?(confirm))
         tstamp = Time.now.to_f
         cookies[:TooFactor] = tstamp
         cmatch = customer_match("#{match}")
@@ -126,5 +136,5 @@ class TooFactor < Sinatra::Application
   error do
       'Sorry there was a nasty error - ' + env['sinatra.error'].name
   end
-
 end
+
