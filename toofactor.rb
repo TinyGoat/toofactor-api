@@ -12,7 +12,6 @@ require 'json'
 require 'builder'
 require 'haml'
 require 'sinatra/cookies'
-require 'rack/cache'
 
 configure :production do
   sha1, date = `git log HEAD~1..HEAD --pretty=format:%h^%ci`.strip.split('^')
