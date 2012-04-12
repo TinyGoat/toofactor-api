@@ -42,10 +42,6 @@ class TooFactor < Sinatra::Application
     $redis.exists confirm
   end
 
-  def log_api(customer)
-    $redis.incr customer
-  end
-
   def gen_hex
     prng = Random.new
     prng.rand(0..15).to_s(base=16)
@@ -64,7 +60,6 @@ class TooFactor < Sinatra::Application
 
   def customer_match(match)
     customer = $redis.get match
-    log_api(match)
     return tokenize(0, 7, customer)
   end
 
@@ -106,7 +101,7 @@ class TooFactor < Sinatra::Application
   get %r{/api/([\w]+)/([\w]+)} do |match,type|
     confirm = "#{match}"
     confirm.freeze
-    begin 
+    #begin 
       if (customer?(confirm))
         tstamp = Time.now.to_f
         cookies[:TooFactor] = tstamp
@@ -122,9 +117,9 @@ class TooFactor < Sinatra::Application
       else
         haml :nomatch
       end
-    rescue
-      haml :eek
-    end
+    #rescue
+    #  haml :eek
+   # end
   end
 
   # Finding Godot
