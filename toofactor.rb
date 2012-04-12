@@ -82,15 +82,16 @@ class TooFactor < Sinatra::Application
     return tokenize(0, 7, customer)
   end
 
-  def create_client_hash(cmatch)
-    client_sha = Digest::SHA2.new << cmatch
+  def create_client_hash(cmatch, tstamp)
+    gohash = cmatch + tstamp.to_s
+    client_sha = Digest::RMD160.new << gohash
     client_url = $base_url + client_sha.to_s
     record_client_token(client_sha, cmatch)
     return client_url
   end
 
   def json_token(cmatch, tstamp)
-    client_url = create_client_hash(cmatch)
+    client_url = create_client_hash(cmatch, tstamp)
     content_type :json
     { :auth => cmatch, :timestamp => tstamp, :client_url => client_url }.to_json
   end
@@ -129,7 +130,7 @@ class TooFactor < Sinatra::Application
   get %r{/api/([\w]+)/([\w]+)} do |match,type|
     confirm = "#{match}"
     confirm.freeze
-    # begin 
+    begin 
       if (customer?(confirm))
         tstamp = Time.now.to_f
         cookies[:TooFactor] = tstamp
@@ -145,21 +146,10 @@ class TooFactor < Sinatra::Application
       else
         haml :nomatch
       end
-    # rescue
-    #  haml :eek
-   # end
-  end
-
-  # Client access
-  #
-  get %r{/client/([\w]+)/$} do |match|
-    client = "#{match}"
-    if (client_token_exist?(client))
-      client_token(client)
-    else
-      haml :client_expired
+    rescue
+      haml :eek
     end
   end
-    
+
 end
 
