@@ -97,7 +97,7 @@ class TooFactor < Sinatra::Application
   end
 
   def xml_token(cmatch, tstamp)
-    client_url = create_client_hash(cmatch)
+    client_url = create_client_hash(cmatch, tstamp)
     xml = Builder::XmlMarkup.new
     xml.token { |b| b.auth(cmatch); b.timestamp(tstamp); b.client_url(client_url) }
   end
@@ -130,7 +130,7 @@ class TooFactor < Sinatra::Application
   get %r{/api/([\w]+)/([\w]+)} do |match,type|
     confirm = "#{match}"
     confirm.freeze
-    begin 
+#    begin 
       if (customer?(confirm))
         tstamp = Time.now.to_f
         cookies[:TooFactor] = tstamp
@@ -146,9 +146,9 @@ class TooFactor < Sinatra::Application
       else
         haml :nomatch
       end
-    rescue
-      haml :eek
-    end
+ #   rescue
+ #     haml :eek
+ #   end
   end
 
 end
