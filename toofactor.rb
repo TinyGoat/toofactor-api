@@ -58,7 +58,7 @@ class TooFactor < Sinatra::Application
       $redis_customer_log = Redis::Namespace.new(:log, :redis => $redis_customer)
     $redis_site_stats     = Redis::Namespace.new(:stats, :redis => $redis)
   
-      def customer?(confirm)
+  def customer?(confirm)
     $redis_customer.exists(confirm)
   end
 
