@@ -14,6 +14,7 @@ require 'json'
 require 'builder'
 require 'haml'
 require 'digest/sha1'
+require 'twilio-ruby'
 
 configure :production do
 
@@ -53,7 +54,7 @@ class TooFactor < Sinatra::Application
   $redis = Redis.new(:host => redis_host, :port => 6379) 
 
   def customer?(confirm)
-    $redis.exists confirm
+    $redis.exists(confirm)
   end
 
   def gen_hex
@@ -77,9 +78,30 @@ class TooFactor < Sinatra::Application
     $redis.expire(client_sha, 90)
   end
 
-  def customer_match(match)
-    customer = $redis.get match
+  def tokenize_customer(match)
+    customer = $redis.get(match)
     return tokenize(0, 7, customer)
+  end
+
+  # Twilio functions
+  #
+  def valid_number?(number)
+    true if Float(number) rescue false
+  end
+  
+  def send_sms(cmatch, tstamp, number)
+    if (valid_number?(number))
+      account_sid = 'AC7cf1d4ccfee943d89892eadd0dbb255e'
+      auth_token = 'e32e80fd3d2bea9fe0133a410866189d'
+      @client = Twilio::REST::Client.new account_sid, auth_token
+      sms_token_status = @client.account.sms.messages.create(
+        :from => '+14155992671',
+        :to => number,
+        :body => cmatch
+        ).status
+      else
+        haml :sms_send_error
+      end
   end
 
   def create_client_hash(cmatch, tstamp)
@@ -117,7 +139,7 @@ class TooFactor < Sinatra::Application
       if (customer?(confirm))
         tstamp = Time.now.to_f
         cookies[:TooFactor] = tstamp
-        cmatch = customer_match("#{match}")
+        cmatch = tokenize_customer("#{match}")
         json_token(cmatch, tstamp)
       else
         haml :nomatch
@@ -127,15 +149,17 @@ class TooFactor < Sinatra::Application
     end
   end
 
-  get %r{/api/([\w]+)/([\w]+)} do |match,type|
+  get %r{/api/([\w]+)/([\w]+)/([\w]+)} do |match,type,number|
     confirm = "#{match}"
     confirm.freeze
 #    begin 
       if (customer?(confirm))
         tstamp = Time.now.to_f
         cookies[:TooFactor] = tstamp
-        cmatch = customer_match("#{match}")
+        cmatch = tokenize_customer("#{match}")
         case type
+          when "sms"
+            send_sms(cmatch, tstamp, number)
           when "json"
             json_token(cmatch, tstamp)
           when "xml"
