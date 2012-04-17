@@ -15,7 +15,9 @@ require 'builder'
 require 'haml'
 require 'digest/sha1'
 require 'twilio-ruby'
-
+require 'redis'
+require 'redis-namespace'
+ 
 configure :production do
 
   sha1, date = `git log HEAD~1..HEAD --pretty=format:%h^%ci`.strip.split('^')
@@ -48,13 +50,16 @@ class TooFactor < Sinatra::Application
   $base_url = "http://toofactor.com/client/"
   redis_host = "127.0.0.1"
 
-  # Everything is a hash
+  # It rubs the Redis on it's skin
   # 
-  require "redis"
   $redis = Redis.new(:host => redis_host, :port => 6379) 
-
-  def customer?(confirm)
-    $redis.exists(confirm)
+    $redis_customer       = Redis::Namespace.new(:customer, :redis => $redis)
+      $redis_client_url   = Redis::Namespace.new(:token, :redis => $redis_customer)
+      $redis_customer_log = Redis::Namespace.new(:log, :redis => $redis_customer)
+    $redis_site_stats     = Redis::Namespace.new(:stats, :redis => $redis)
+  
+      def customer?(confirm)
+    $redis_customer.exists(confirm)
   end
 
   def gen_hex
@@ -62,8 +67,7 @@ class TooFactor < Sinatra::Application
     prng.rand(0..15).to_s(base=16)
   end
 
-  # Abstract so we can potentially set
-  # token length per customer
+  # Potentially set token length per customer
   #
   def tokenize(min, max, token)
     token = ""
@@ -72,15 +76,24 @@ class TooFactor < Sinatra::Application
     end
     return token
   end
-
+  
   def record_client_token(client_sha, token)
-    $redis.set(client_sha, token)
-    $redis.expire(client_sha, 90)
+    $redis_client_url.multi do
+      $redis_client_url.set(client_sha, token)
+      $redis_client_url.expire(client_sha, 90)
+    end
   end
 
   def tokenize_customer(match)
-    customer = $redis.get(match)
+    customer = $redis_customer.get(match)
     return tokenize(0, 7, customer)
+  end
+
+  def logit(*stuff)
+    month = Time.now.month.to_s
+    year = Time.now.year.to_s
+    $redis_customer_log.multi do
+    end
   end
 
   # Twilio functions
@@ -93,15 +106,17 @@ class TooFactor < Sinatra::Application
     if (valid_number?(number))
       account_sid = 'AC7cf1d4ccfee943d89892eadd0dbb255e'
       auth_token = 'e32e80fd3d2bea9fe0133a410866189d'
-      @client = Twilio::REST::Client.new account_sid, auth_token
-      sms_token_status = @client.account.sms.messages.create(
-        :from => '+14155992671',
-        :to => number,
-        :body => cmatch
-        ).status
-      else
-        haml :sms_send_error
+      begin
+        @client = Twilio::REST::Client.new account_sid, auth_token
+        sms_token_status = @client.account.sms.messages.create(
+          :from => '+14155992671',
+          :to => number,
+          :body => cmatch
+          ).status
+      rescue
+        haml :error_twilio
       end
+    end
   end
 
   def create_client_hash(cmatch, tstamp)
