@@ -4,6 +4,7 @@ require 'sinatra'
   set :sessions, true
   set :logging, true
   set :dump_errors, true
+  set :raise_errors, true
   set :static, true
   set :static_cache_control, [:private, :max_age => 60]
   set :public_folder, 'public'
@@ -17,7 +18,8 @@ require 'digest/sha1'
 require 'twilio-ruby'
 require 'redis'
 require 'redis-namespace'
- 
+require 'pry-debug'
+
 configure :production do
 
   sha1, date = `git log HEAD~1..HEAD --pretty=format:%h^%ci`.strip.split('^')
