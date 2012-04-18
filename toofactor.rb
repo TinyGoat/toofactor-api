@@ -18,7 +18,6 @@ require 'digest/sha1'
 require 'twilio-ruby'
 require 'redis'
 require 'redis-namespace'
-require 'pry-debug'
 
 configure :production do
 
