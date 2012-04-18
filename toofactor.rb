@@ -165,7 +165,12 @@ class TooFactor < Sinatra::Application
     end
   end
 
-  get %r{/api/([\w]+)/([\w]+)/([\w]+)} do |match,type,number|
+  get '/api/*/*/*' do |*args|
+    
+    match   = args[0]
+    type    = args[1]
+    number  = args[2]
+
     confirm = "#{match}"
     confirm.freeze
 #    begin 
