@@ -166,15 +166,9 @@ class TooFactor < Sinatra::Application
   end
 
   get '/api/*/*/*' do |*args|
-    
-    match   = args[0]
-    type    = args[1]
-    number  = args[2]
-
-    confirm = "#{match}"
-    confirm.freeze
-#    begin 
-      if (customer?(confirm))
+    match, type, number = args
+#   begin 
+      if (customer?(match))
         tstamp = Time.now.to_f
         cookies[:TooFactor] = tstamp
         cmatch = tokenize_customer("#{match}")
