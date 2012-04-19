@@ -148,24 +148,6 @@ class TooFactor < Sinatra::Application
 
   # Route me harder
   #
-  get %r{/api/([\w]+)/$} do |match|
-    confirm = "#{match}"
-    confirm.freeze
-    begin
-      if (customer?(confirm))
-        tstamp = Time.now.to_f
-        cookies[:TooFactor] = tstamp
-        cmatch = tokenize_customer("#{match}")
-        json_token(cmatch, tstamp)
-      else
-        @api_requested = confirm
-        haml :nomatch
-      end
-    rescue
-      haml :eek
-    end
-  end
-
   get '/api/*/*/*' do |*args|
     match, type, number = args
 #   begin 
