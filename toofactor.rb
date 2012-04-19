@@ -158,6 +158,7 @@ class TooFactor < Sinatra::Application
         cmatch = tokenize_customer("#{match}")
         json_token(cmatch, tstamp)
       else
+        @api_requested = confirm
         haml :nomatch
       end
     rescue
@@ -183,6 +184,7 @@ class TooFactor < Sinatra::Application
             json_token(cmatch, tstamp)
         end    
       else
+        @api_requested = confirm
         haml :nomatch
       end
  #   rescue
