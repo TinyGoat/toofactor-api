@@ -140,39 +140,56 @@ class TooFactor < Sinatra::Application
     xml.token { |b| b.auth(cmatch); b.timestamp(tstamp); b.client_url(client_url) }
   end
 
+  def output_token(match, type, number)
+    
+    type    ||= "json"
+    number  ||= 0
+    
+    tstamp = Time.now.to_f
+    cookies[:TooFactor] = tstamp
+    cmatch = tokenize_customer("#{match}")
+    
+    case type
+      when "sms"
+        send_sms(cmatch, tstamp, number)
+      when "json"
+        json_token(cmatch, tstamp)
+      when "xml"
+        xml_token(cmatch, tstamp)
+      else
+        json_token(cmatch, tstamp)
+     end
+   
+   end
+
   # Move along son
   #
   get '/' do
     haml :root
+  end
+  
+  get %r{/api/([\w]+)/?$} do |match|      
+    type    = "json"
+    number  = 0
+    output_token(match, type, number)
   end
 
   # Route me harder
   #
   get '/api/*/*/*' do |*args|
     match, type, number = args
-#   begin 
+    begin 
       if (customer?(match))
-        tstamp = Time.now.to_f
-        cookies[:TooFactor] = tstamp
-        cmatch = tokenize_customer("#{match}")
-        case type
-          when "sms"
-            send_sms(cmatch, tstamp, number)
-          when "json"
-            json_token(cmatch, tstamp)
-          when "xml"
-            xml_token(cmatch, tstamp)
-          else
-            json_token(cmatch, tstamp)
-        end    
+        output_token(match, type, number)
       else
-        @api_requested = confirm
+        @api_requested = match
         haml :nomatch
       end
- #   rescue
- #     haml :eek
- #   end
+    rescue
+      haml :eek
+    end
   end
 
+## End of line
 end
 
