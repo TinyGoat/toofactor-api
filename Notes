@@ -1,0 +1,19 @@
+- customer api == bcrypt of email address, shasummed:
+
+require 'digest'
+salt = "2a108BNGCs8RrY0K9PQhU2T7fu10rCEQUeM3trw3a4cRgjIWe9c1185a5c5e9fc54612808977ee8f548b2258d31"
+email = "rtgregory@gmail.com"
+foo = email + salt
+customer_api = Digest::RMD160.new << foo
+
+HASH
+    customer:API
+        api ""
+        xml_access 0
+        json_access 0
+        last_token 4512a3e6
+        last_client_url 26bd97ba0aba4232890290faacbdedf6d4c7aba5543b73d9ec5967628e0fdd5a
+        last_access 1334256194.8265269
+        expired 0
+Strings
+    26bd97ba0aba4232890290faacbdedf6d4c7aba5543b73d9ec5967628e0fdd5a 4512a3e6
