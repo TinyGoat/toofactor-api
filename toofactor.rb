@@ -20,7 +20,10 @@ require 'redis'
 require 'redis-namespace'
 
 configure :production do
-
+  
+  set :dump_errors, false
+  set :raise_errors, false
+  
   sha1, date = `git log HEAD~1..HEAD --pretty=format:%h^%ci`.strip.split('^')
   
   require 'rack/cache'
@@ -35,7 +38,7 @@ configure :production do
   # Find Godot
   #
   not_found do
-    haml :notfound
+    haml :no_such_page
   end
   
   error do
@@ -44,13 +47,20 @@ configure :production do
 
 end
 
+configure :development do
+  error do
+    'Sorry there was a nasty error - ' + env['sinatra.error'].name
+  end
+end
+
 # Ruby dudes are all about class baby
 # 
 class TooFactor < Sinatra::Application
  
   $base_url = "http://toofactor.com/client/"
   redis_host = "127.0.0.1"
-
+  @salt = "2a108BNGCs8RrY0K9PQhU2T7fu10rCEQUeM3trw3a4cRgjIWe9c1185a5c5e9fc54612808977ee8f548b2258d31"    
+  
   # It rubs the Redis on it's skin
   # 
   $redis = Redis.new(:host => redis_host, :port => 6379) 
@@ -160,17 +170,27 @@ class TooFactor < Sinatra::Application
         xml_token(cmatch, tstamp)
       else
         json_token(cmatch, tstamp)
-     end
+    end
+  end 
    
+   # Create customer API key (salted hash of email address)
+   def create_client_api(email)
+     customer_api = Digest::RMD160.new << email + $salt
    end
+     
+### Go go Gadget TooFactor
 
   # Move along son
   #
   get '/' do
-    haml :root
+    haml :homepage
   end
-  
-  # No preference for format
+
+  get '/signup/?' do
+    'Hi'
+  end
+
+  # With no preference for format, we set to JSON
   #
   get %r{/api/([\w]+)/?$} do |match|      
     type    = "json"
@@ -187,10 +207,10 @@ class TooFactor < Sinatra::Application
         output_token(match, type, number)
       else
         @api_requested = match
-        haml :nomatch
+        haml :no_api_match
       end
     rescue
-      haml :eek
+      haml :fail_whale
     end
   end
 
