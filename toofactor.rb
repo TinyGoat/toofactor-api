@@ -195,7 +195,16 @@ class TooFactor < Sinatra::Application
   get %r{/api/([\w]+)/?$} do |match|      
     type    = "json"
     number  = 0
-    output_token(match, type, number)
+    begin 
+       if (customer?(match))
+         output_token(match, type, number)
+       else
+         @api_requested = match
+         haml :no_api_match
+       end
+     rescue
+       haml :fail_whale
+    end
   end
 
   # Route me harder
