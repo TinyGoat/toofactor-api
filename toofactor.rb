@@ -149,6 +149,8 @@ class TooFactor < Sinatra::Application
     cookies[:TooFactor] = tstamp
     cmatch = tokenize_customer("#{match}")
     
+    # Offer various output formats
+    #
     case type
       when "sms"
         send_sms(cmatch, tstamp, number)
@@ -168,6 +170,8 @@ class TooFactor < Sinatra::Application
     haml :root
   end
   
+  # No preference for format
+  #
   get %r{/api/([\w]+)/?$} do |match|      
     type    = "json"
     number  = 0
