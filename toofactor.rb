@@ -205,10 +205,26 @@ class TooFactor < Sinatra::Application
     end
   end
 
+  ###### Nav sections
+  #
   get '/signup/?' do
     'Hi'
   end
 
+  get '/about/?' do
+    'More about me'
+  end
+
+  get '/pricing/?' do
+    'More pricing'
+  end
+
+  get '/login/?' do
+    'Log me in'
+  end
+
+  ###### Process
+  #
   # With no preference for format, we set to JSON
   #
   get %r{/api/([\w]+)/?$} do |match|      
