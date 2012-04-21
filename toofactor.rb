@@ -173,10 +173,11 @@ class TooFactor < Sinatra::Application
     end
   end 
    
-   # Create customer API key (salted hash of email address)
-   def create_client_api(email)
-     customer_api = Digest::RMD160.new << email + $salt
-   end
+  # Create customer API key (salted hash of email address)
+  # 
+  def create_client_api(email)
+    customer_api = Digest::RMD160.new << email + $salt
+  end
      
 ### Go go Gadget TooFactor
 
