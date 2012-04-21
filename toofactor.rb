@@ -69,10 +69,23 @@ class TooFactor < Sinatra::Application
       $redis_customer_log = Redis::Namespace.new(:log, :redis => $redis_customer)
     $redis_site_stats     = Redis::Namespace.new(:stats, :redis => $redis)
   
+  # Customer functions
+  # 
   def customer?(confirm)
     $redis_customer.exists(confirm)
   end
 
+  def client_purl?(purl)
+    $redis_client_url.exists(purl)
+  end
+
+  def record_client_token(client_sha, token)
+    $redis_client_url.multi do
+      $redis_client_url.set(client_sha, token)
+      $redis_client_url.expire(client_sha, 90)
+    end
+  end
+  
   def gen_hex
     prng = Random.new
     prng.rand(0..15).to_s(base=16)
@@ -88,18 +101,13 @@ class TooFactor < Sinatra::Application
     return token
   end
   
-  def record_client_token(client_sha, token)
-    $redis_client_url.multi do
-      $redis_client_url.set(client_sha, token)
-      $redis_client_url.expire(client_sha, 90)
-    end
-  end
-
   def tokenize_customer(match)
     customer = $redis_customer.get(match)
     return tokenize(0, 7, customer)
   end
 
+  # Log the lot -- need to report on usage
+  #
   def logit(*stuff)
     month = Time.now.month.to_s
     year = Time.now.year.to_s
@@ -187,6 +195,16 @@ class TooFactor < Sinatra::Application
     haml :homepage
   end
 
+  # Determine if a client URL is valid
+  #
+  get '/client/*' do |purl|
+    if (client_purl?(purl))
+      status 200
+    else
+      status 406
+    end
+  end
+
   get '/signup/?' do
     'Hi'
   end
@@ -225,5 +243,8 @@ class TooFactor < Sinatra::Application
   end
 
 ## End of line
+
+
+
 end
 
