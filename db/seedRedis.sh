@@ -3,6 +3,7 @@
 echo "hmset customer:1000 \
   email foo@bar.com \
   oauth_token 99999 \
+  cc_token 000000000 \
   api 1000 \
   xml_access 0 \
   json_access 0 \
