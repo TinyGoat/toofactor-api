@@ -68,7 +68,11 @@ class TooFactor < Sinatra::Application
       $redis_client_url   = Redis::Namespace.new(:token, :redis => $redis_customer)
       $redis_customer_log = Redis::Namespace.new(:log, :redis => $redis_customer)
     $redis_site_stats     = Redis::Namespace.new(:stats, :redis => $redis)
-  
+
+  # Seed baseline test
+  #
+  $redis_customer.set("1000", "foo")
+
   # Customer functions
   # 
   def customer?(confirm)
