@@ -26,9 +26,6 @@ configure :production do
   
   sha1, date = `git log HEAD~1..HEAD --pretty=format:%h^%ci`.strip.split('^')
   
-  require 'rack/cache'
-  use Rack::Cache
-
   before do
     cache_control :public, :must_revalidate, :max_age=>300
     etag sha1
