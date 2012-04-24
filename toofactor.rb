@@ -193,12 +193,6 @@ class TooFactor < Sinatra::Application
      
 ### Go go Gadget TooFactor
 
-  # Move along son
-  #
-  get '/' do
-    haml :homepage
-  end
-
   # Determine if a client URL is valid
   #
   get '/client/*' do |purl|
@@ -209,29 +203,11 @@ class TooFactor < Sinatra::Application
     end
   end
 
-  ###### Nav sections
-  #
-  get '/signup/?' do
-    'Hi'
-  end
-
-  get '/about/?' do
-    'More about me'
-  end
-
-  get '/pricing/?' do
-    'More pricing'
-  end
-
-  get '/login/?' do
-    'Log me in'
-  end
-
   ###### Process
   #
   # With no preference for format, we set to JSON
   #
-  get %r{/api/([\w]+)/?$} do |match|      
+  get %r{/([\w]+)/?$} do |match|      
     type    = "json"
     number  = 0
     begin 
@@ -248,7 +224,7 @@ class TooFactor < Sinatra::Application
 
   # Route me harder
   #
-  get '/api/*/*/*' do |*args|
+  get '/*/*/*' do |*args|
     match, type, number = args
     begin 
       if (customer?(match))
