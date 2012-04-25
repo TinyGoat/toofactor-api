@@ -27,7 +27,7 @@ configure :production do
   sha1, date = `git log HEAD~1..HEAD --pretty=format:%h^%ci`.strip.split('^')
   
   before do
-    cache_control :public, :must_revalidate, :max_age=>300
+    cache_control :private, :must_revalidate, :max_age=>0
     etag sha1
     last_modified date
   end
@@ -44,26 +44,23 @@ configure :production do
 
 end
 
-configure :development do
-  error do
-    'Sorry there was a nasty error - ' + env['sinatra.error'].name
-  end
-end
-
 # Ruby dudes are all about class baby
 # 
 class TooFactor < Sinatra::Application
  
   $base_url = "http://toofactor.com/client/"
   redis_host = "127.0.0.1"
+  month    = Time.now.month
+  year     = Time.now.year
   @salt = "2a108BNGCs8RrY0K9PQhU2T7fu10rCEQUeM3trw3a4cRgjIWe9c1185a5c5e9fc54612808977ee8f548b2258d31"    
   
   # It rubs the Redis on it's skin
   # 
+  log = ":log:" + month.to_s + year.to_s
   $redis = Redis.new(:host => redis_host, :port => 6379) 
     $redis_customer       = Redis::Namespace.new(:customer, :redis => $redis)
       $redis_client_url   = Redis::Namespace.new(:token, :redis => $redis_customer)
-      $redis_customer_log = Redis::Namespace.new(:log, :redis => $redis_customer)
+      $redis_customer_log = Redis::Namespace.new(log, :redis => $redis_customer)
     $redis_site_stats     = Redis::Namespace.new(:stats, :redis => $redis)
 
   # Seed baseline test
@@ -84,6 +81,15 @@ class TooFactor < Sinatra::Application
     $redis_client_url.multi do
       $redis_client_url.set(client_sha, token)
       $redis_client_url.expire(client_sha, 90)
+      $redis_client_url.set(token, client_sha)
+      $redis_client_url.expire(token, 90)
+    end
+  end
+
+  def record_sms_token(cmatch, tstamp)
+    $redis_client_url.multi do
+      $redis_client_url.set(cmatch, tstamp)
+      $redis_client_url.expire(cmatch, 90)
     end
   end
   
@@ -110,8 +116,10 @@ class TooFactor < Sinatra::Application
   # Log the lot -- need to report on usage
   #
   def logit(*stuff)
-    month = Time.now.month.to_s
-    year = Time.now.year.to_s
+    # Basic thought here is to use Redis' pub/sub model -- push the logging
+    # task to a Redis channel, let the Account app handle the actual logging
+    # in a non-blocking way -- no ORM, no problem
+    #
     $redis_customer_log.multi do
     end
   end
@@ -122,6 +130,8 @@ class TooFactor < Sinatra::Application
     true if Float(number) rescue false
   end
   
+  # Send token to client phone
+  #
   def send_sms(cmatch, tstamp, number)
     if (valid_number?(number))
       account_sid = 'AC7cf1d4ccfee943d89892eadd0dbb255e'
@@ -133,12 +143,15 @@ class TooFactor < Sinatra::Application
           :to => number,
           :body => cmatch
           ).status
+          record_sms_token(cmatch, tstamp)
       rescue
         haml :error_twilio
       end
     end
   end
 
+  # Create unique, expirable client URL's
+  #
   def create_client_hash(cmatch, tstamp)
     gohash = cmatch + tstamp.to_s
     client_sha = Digest::RMD160.new << gohash
@@ -147,25 +160,30 @@ class TooFactor < Sinatra::Application
     return client_url
   end
 
+  # Straight JSON please
+  #
   def json_token(cmatch, tstamp)
     client_url = create_client_hash(cmatch, tstamp)
     content_type :json
     { :auth => cmatch, :timestamp => tstamp, :client_url => client_url }.to_json
   end
 
+  # XML .. why not
+  #
   def xml_token(cmatch, tstamp)
     client_url = create_client_hash(cmatch, tstamp)
     xml = Builder::XmlMarkup.new
     xml.token { |b| b.auth(cmatch); b.timestamp(tstamp); b.client_url(client_url) }
   end
-
+  
+  # Do it
+  #
   def output_token(match, type, number)
     
     type    ||= "json"
     number  ||= 0
     
     tstamp = Time.now.to_f
-    cookies[:TooFactor] = tstamp
     cmatch = tokenize_customer("#{match}")
     
     # Offer various output formats
@@ -190,9 +208,17 @@ class TooFactor < Sinatra::Application
      
 ### Go go Gadget TooFactor
 
-  # Determine if a client URL is valid
+  # Determine if a client URL/token is valid
   #
   get '/client/*' do |purl|
+    if (client_purl?(purl))
+      status 200
+    else
+      status 406
+    end
+  end
+
+  get '/token/*' do |purl|
     if (client_purl?(purl))
       status 200
     else
@@ -204,15 +230,16 @@ class TooFactor < Sinatra::Application
   #
   # With no preference for format, we set to JSON
   #
-  get %r{/([\w]+)/?$} do |match|      
+  get %r{/api/([\w]+)/?$} do |match| 
     type    = "json"
     number  = 0
     begin 
        if (customer?(match))
          output_token(match, type, number)
        else
-         @api_requested = match
-         haml :no_api_match
+         match
+         #@api_requested = match
+         #haml :no_api_match
        end
      rescue
        haml :fail_whale
@@ -221,22 +248,21 @@ class TooFactor < Sinatra::Application
 
   # Route me harder
   #
-  get '/*/*/*' do |*args|
+  get '/api/*/*/*' do |*args|
     match, type, number = args
     begin 
       if (customer?(match))
         output_token(match, type, number)
       else
-        @api_requested = match
-        haml :no_api_match
+        match + type
+        #@api_requested = match
+        #haml :no_api_match
       end
     rescue
       haml :fail_whale
     end
   end
-
 ## End of line
-
 
 
 end
