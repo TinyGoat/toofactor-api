@@ -65,7 +65,11 @@ class TooFactor < Sinatra::Application
       $redis_client_url   = Redis::Namespace.new(:token, :redis => $redis_customer)
       $redis_customer_log = Redis::Namespace.new(:log, :redis => $redis_customer)
     $redis_site_stats     = Redis::Namespace.new(:stats, :redis => $redis)
-  
+
+  # Seed baseline test
+  #
+  $redis_customer.set("1000", "foo")
+
   # Customer functions
   # 
   def customer?(confirm)
@@ -186,12 +190,6 @@ class TooFactor < Sinatra::Application
      
 ### Go go Gadget TooFactor
 
-  # Move along son
-  #
-  get '/' do
-    haml :homepage
-  end
-
   # Determine if a client URL is valid
   #
   get '/client/*' do |purl|
@@ -202,29 +200,11 @@ class TooFactor < Sinatra::Application
     end
   end
 
-  ###### Nav sections
-  #
-  get '/signup/?' do
-    'Hi'
-  end
-
-  get '/about/?' do
-    'More about me'
-  end
-
-  get '/pricing/?' do
-    'More pricing'
-  end
-
-  get '/login/?' do
-    'Log me in'
-  end
-
   ###### Process
   #
   # With no preference for format, we set to JSON
   #
-  get %r{/api/([\w]+)/?$} do |match|      
+  get %r{/([\w]+)/?$} do |match|      
     type    = "json"
     number  = 0
     begin 
@@ -241,7 +221,7 @@ class TooFactor < Sinatra::Application
 
   # Route me harder
   #
-  get '/api/*/*/*' do |*args|
+  get '/*/*/*' do |*args|
     match, type, number = args
     begin 
       if (customer?(match))
