@@ -42,6 +42,13 @@ redis_host = "127.0.0.1"
 #$redis_token    = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password) 
 $redis_customer = Redis.new(:host => redis_host, :port => 6379)
 $redis_token    = Redis.new(:host => redis_host, :port => 6379) 
+$redis_log      = Redis.new(:host => redis_host, :port => 6379)
+
+# Geoff likes logs
+#
+def log_to_redis(message)
+  $redis_log.publish("LOG", message)
+end
 
 # Seed baseline test
 #
@@ -153,26 +160,28 @@ end
 # Output token, default to JSON
 #
 def output_token(match, type, number)
-   
+  
+  match   ||= "ERROR" 
   type    ||= "json"
   number  ||= 0
   
   tstamp = Time.now.to_f
   cmatch = tokenize_customer("#{match}")
+  message = match + ":" + type + ":" + number
+  log_to_redis(message)    
   
   # Offer various output formats
   #
-  case type
+  case type   
     when "sms"
       send_sms(cmatch, tstamp, number)
     when "json"  
       json_token(cmatch, tstamp)
     when "xml"
       xml_token(cmatch, tstamp)
-    else
+    else  
       json_token(cmatch, tstamp)
   end
-  
 end 
  
 # Determine if a client URL/token is valid
