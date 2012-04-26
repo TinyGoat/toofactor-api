@@ -8,6 +8,7 @@ require 'sinatra'
   set :static, true
   set :static_cache_control, [:private, :max_age => 60]
   set :public_folder, 'public'
+  set :environment, :development
 
 require 'sinatra/cookies'
 require 'sinatra/multi_route'
