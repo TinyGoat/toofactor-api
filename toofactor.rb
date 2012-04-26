@@ -32,19 +32,20 @@ end
 $base_url = "http://dev.toofactor.com/"
 $default_expire = 90
 
-#ENV["REDISTOGO_URL"] = 'redis://redistogo:809165c597aee3f873f3a0776ba03cac@gar.redistogo.com:9163'
-#uri = URI.parse(ENV["REDISTOGO_URL"])
+ENV["REDISTOGO_URL"] = 'redis://redistogo:809165c597aee3f873f3a0776ba03cac@gar.redistogo.com:9163'
+uri = URI.parse(ENV["REDISTOGO_URL"])
 redis_host = "127.0.0.1"
    
 
 # It rubs the Redis on it's skin
 # 
 
-#$redis_customer = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)                                                             
-#$redis_token    = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password) 
-$redis_customer = Redis.new(:host => redis_host, :port => 6379)
-$redis_token    = Redis.new(:host => redis_host, :port => 6379) 
-$redis_log      = Redis.new(:host => redis_host, :port => 6379)
+$redis_customer = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)                                                             
+$redis_token    = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password) 
+$redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+#$redis_customer = Redis.new(:host => redis_host, :port => 6379)
+#$redis_token    = Redis.new(:host => redis_host, :port => 6379) 
+#$redis_log      = Redis.new(:host => redis_host, :port => 6379)
 
 # Geoff likes logs
 #
