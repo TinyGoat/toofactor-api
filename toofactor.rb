@@ -1,14 +1,13 @@
 # Sinatra is for closers
 #
 require 'sinatra'
+  set :root, File.dirname(__FILE__)
   set :sessions, false
-  set :logging, false
-  set :dump_errors, true
-  set :raise_errors, true
-  set :static, true
+  set :static, false
   set :static_cache_control, [:private, :max_age => 60]
   set :public_folder, 'public'
   set :environment, :development
+  set :server, %w[unicorn thin mongrel webrick]
 
 require 'sinatra/cookies'
 require 'sinatra/multi_route'
@@ -21,8 +20,13 @@ require 'twilio-ruby'
 require 'redis'
 require 'redis-namespace'
 
+
 configure :production do
-  
+
+  set :dump_errors, false
+  set :raise_errors, false
+  set :logging, true
+
   # Redis
   #
   ENV["REDISTOGO_URL"] = 'redis://redistogo:809165c597aee3f873f3a0776ba03cac@gar.redistogo.com:9163'
@@ -43,10 +47,16 @@ configure :production do
 end
 
 configure :development do
-  redis_host = "127.0.0.1"
-  $redis_customer = Redis.new(:host => redis_host, :port => 6379)
-  $redis_token    = Redis.new(:host => redis_host, :port => 6379) 
-  $redis_log      = Redis.new(:host => redis_host, :port => 6379)
+
+  $redis_customer = Redis.new(:host => "127.0.0.1", :port => 6379)
+  $redis_token    = Redis.new(:host => "127.0.0.1", :port => 6379) 
+  $redis_log      = Redis.new(:host => "127.0.0.1", :port => 6379)
+  
+  set :dump_errors, true
+  set :raise_errors, true
+  set :logging, true
+  set :show_exceptions, true
+
 end
 
 # Find Godot
@@ -233,4 +243,13 @@ get '/api/*/*/*' do |*args|
     end
 end
 
+# Paranoia will destroy ya
+#
+patch '*' do
+  status 418
+end
+
+post '*' do
+  status 418
+end
 
