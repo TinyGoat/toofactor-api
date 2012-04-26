@@ -177,9 +177,12 @@ def json_token(cmatch, tstamp)
 end
 
 def xml_token(cmatch, tstamp)
-  client_url = create_client_hash(cmatch, tstamp)
-  xml = Builder::XmlMarkup.new
-  xml.token { |b| b.auth(cmatch); b.timestamp(tstamp); b.client_url(client_url) }
+  @client_url     = create_client_hash(cmatch, tstamp)
+  @cmatch         = cmatch
+  @timestamp      = tstamp
+  @token_url      = create_token_url(cmatch)
+  @token_expires  = tstamp + 90
+  builder :token
 end
 
 # Output token, default to JSON
