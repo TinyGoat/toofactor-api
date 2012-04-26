@@ -3,6 +3,6 @@ xml.auth do
   xml.token @cmatch
   xml.timestamp @timestamp
   xml.expires @token_expires
-  xml.tokenURL @token_url
-  xml.clientURL @client_url
+  xml.token_url @token_url
+  xml.client_url @client_url
 end
