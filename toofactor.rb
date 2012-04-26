@@ -157,9 +157,8 @@ end
 def json_token(cmatch, tstamp)
   client_url  = create_client_hash(cmatch, tstamp)
   token_url   = create_token_url(cmatch)
-  expires     = tstamp + 90
   content_type :json
-  { :auth => cmatch, :timestamp => tstamp, :expires => expires, :token_url => token_url, :client_url => client_url }.to_json
+  { :auth => cmatch, :timestamp => tstamp, :token_url => token_url, :client_url => client_url }.to_json
 end
 
 def xml_token(cmatch, tstamp)
