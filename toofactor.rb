@@ -29,7 +29,7 @@ error do
   'Sorry there was a nasty error - ' + env['sinatra.error'].name
 end
 
-$base_url = "http://toofactor.com/client/"
+$base_url = "http://dev.toofactor.com/client/"
 #ENV["REDISTOGO_URL"] = 'redis://redistogo:809165c597aee3f873f3a0776ba03cac@gar.redistogo.com:9163'
 #uri = URI.parse(ENV["REDISTOGO_URL"])
 redis_host = "127.0.0.1"
@@ -112,6 +112,7 @@ end
 #def valid_number?(number)
 #  true if Float(number) rescue false
 #end
+
 
 # Send token to client phone
 #
@@ -214,4 +215,5 @@ get '/api/*/*/*' do |*args|
       status 401
     end
 end
- 
+
+
