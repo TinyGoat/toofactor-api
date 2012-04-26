@@ -80,12 +80,12 @@ end
 
 # Seed baseline test
 #
-$redis_customer.set("1000", "foo")
+$redis_customer.set("1000", "0")
 
-# Customer functions
-# 
 def customer?(confirm)
-  $redis_customer.exists(confirm)
+  if ($redis_customer.exists(confirm))
+    true if ($redis_customer.get(confirm) == "0") rescue false
+  end
 end
 
 def client_purl?(purl)
