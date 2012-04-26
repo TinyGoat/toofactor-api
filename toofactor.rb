@@ -10,6 +10,7 @@ require 'sinatra'
   set :public_folder, 'public'
 
 require 'sinatra/cookies'
+require 'sinatra/multi_route'
 
 require 'json'
 require 'builder'
@@ -18,6 +19,34 @@ require 'digest/sha1'
 require 'twilio-ruby'
 require 'redis'
 require 'redis-namespace'
+
+configure :production do
+  
+  # Redis
+  #
+  ENV["REDISTOGO_URL"] = 'redis://redistogo:809165c597aee3f873f3a0776ba03cac@gar.redistogo.com:9163'
+  uri = URI.parse(ENV["REDISTOGO_URL"])    
+  $redis_customer = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)                                                             
+  $redis_token    = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password) 
+  $redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+ 
+  # Headers and caching
+  #
+  sha1, date = `git log HEAD~1..HEAD --pretty=format:%h^%ci`.strip.split('^')
+
+  before do
+    cache_control :public, :must_revalidate, :max_age=>0
+    etag sha1
+    last_modified date
+  end
+end
+
+configure :development do
+  redis_host = "127.0.0.1"
+  $redis_customer = Redis.new(:host => redis_host, :port => 6379)
+  $redis_token    = Redis.new(:host => redis_host, :port => 6379) 
+  $redis_log      = Redis.new(:host => redis_host, :port => 6379)
+end
 
 # Find Godot
 #
@@ -31,21 +60,6 @@ end
 
 $base_url = "http://dev.toofactor.com/"
 $default_expire = 90
-
-ENV["REDISTOGO_URL"] = 'redis://redistogo:809165c597aee3f873f3a0776ba03cac@gar.redistogo.com:9163'
-uri = URI.parse(ENV["REDISTOGO_URL"])
-redis_host = "127.0.0.1"
-   
-
-# It rubs the Redis on it's skin
-# 
-
-$redis_customer = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)                                                             
-$redis_token    = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password) 
-$redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
-#$redis_customer = Redis.new(:host => redis_host, :port => 6379)
-#$redis_token    = Redis.new(:host => redis_host, :port => 6379) 
-#$redis_log      = Redis.new(:host => redis_host, :port => 6379)
 
 # Geoff likes logs
 #
@@ -197,17 +211,7 @@ end
  
 # Determine if a client URL/token is valid
 #
-get '/client/*' do |purl|
-  if (client_purl?(purl))
-    status 202
-  else
-    status 410
-  end
-end
-
-# Confirm token is valid
-#
-get '/token/*' do |purl|
+get '/token/*', '/client/*' do |purl|
   if (client_purl?(purl))
     status 202
   else
