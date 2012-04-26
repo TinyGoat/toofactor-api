@@ -40,12 +40,12 @@ redis_host = "127.0.0.1"
 # It rubs the Redis on it's skin
 # 
 
-#$redis_customer = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)                                                             
-#$redis_token    = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password) 
-#$redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
-$redis_customer = Redis.new(:host => redis_host, :port => 6379)
-$redis_token    = Redis.new(:host => redis_host, :port => 6379) 
-$redis_log      = Redis.new(:host => redis_host, :port => 6379)
+$redis_customer = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)                                                             
+$redis_token    = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password) 
+$redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+#$redis_customer = Redis.new(:host => redis_host, :port => 6379)
+#$redis_token    = Redis.new(:host => redis_host, :port => 6379) 
+#$redis_log      = Redis.new(:host => redis_host, :port => 6379)
 
 # Geoff likes logs
 #
