@@ -3,8 +3,8 @@
 require 'sinatra'
   set :sessions, false
   set :logging, false
-  set :dump_errors, false
-  set :raise_errors, false
+  set :dump_errors, true
+  set :raise_errors, true
   set :static, true
   set :static_cache_control, [:private, :max_age => 60]
   set :public_folder, 'public'
@@ -40,12 +40,12 @@ redis_host = "127.0.0.1"
 # It rubs the Redis on it's skin
 # 
 
-$redis_customer = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)                                                             
-$redis_token    = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password) 
-$redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
-#$redis_customer = Redis.new(:host => redis_host, :port => 6379)
-#$redis_token    = Redis.new(:host => redis_host, :port => 6379) 
-#$redis_log      = Redis.new(:host => redis_host, :port => 6379)
+#$redis_customer = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)                                                             
+#$redis_token    = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password) 
+#$redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+$redis_customer = Redis.new(:host => redis_host, :port => 6379)
+$redis_token    = Redis.new(:host => redis_host, :port => 6379) 
+$redis_log      = Redis.new(:host => redis_host, :port => 6379)
 
 # Geoff likes logs
 #
