@@ -29,7 +29,9 @@ error do
   'Sorry there was a nasty error - ' + env['sinatra.error'].name
 end
 
-$base_url = "http://dev.toofactor.com/client/"
+$base_url = "http://dev.toofactor.com/"
+$default_expire = 90
+
 #ENV["REDISTOGO_URL"] = 'redis://redistogo:809165c597aee3f873f3a0776ba03cac@gar.redistogo.com:9163'
 #uri = URI.parse(ENV["REDISTOGO_URL"])
 redis_host = "127.0.0.1"
@@ -139,17 +141,24 @@ end
 def create_client_hash(cmatch, tstamp)
   gohash = cmatch + tstamp.to_s
   client_sha = Digest::RMD160.new << gohash
-  client_url = $base_url + client_sha.to_s
+  client_url = $base_url + "client/" + client_sha.to_s
   record_client_token(client_sha, cmatch)
   return client_url
 end
 
+def create_token_url(cmatch)
+  token_url = $base_url + "token/" + cmatch
+end 
+
+
 # Token options: JSON and XML
 #
 def json_token(cmatch, tstamp)
-  client_url = create_client_hash(cmatch, tstamp)
+  client_url  = create_client_hash(cmatch, tstamp)
+  token_url   = create_token_url(cmatch)
+  expires     = tstamp + 90
   content_type :json
-  { :auth => cmatch, :timestamp => tstamp, :client_url => client_url }.to_json
+  { :auth => cmatch, :timestamp => tstamp, :expires => expires.to_i, :token_url => token_url, :client_url => client_url }.to_json
 end
 
 def xml_token(cmatch, tstamp)
@@ -166,7 +175,7 @@ def output_token(match, type, number)
   type    ||= "json"
   number  ||= 0
   
-  tstamp = Time.now.to_f
+  tstamp = Time.now.to_i
   cmatch = tokenize_customer("#{match}")
   message = match + ":" + type + ":" + number
   log_to_redis(message)    
