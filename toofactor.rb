@@ -141,7 +141,6 @@ end
 #  true if Float(number) rescue false
 #end
 
-
 # Send token to client phone
 #
 def send_sms(cmatch, tstamp, number)
@@ -210,12 +209,8 @@ end
 
 # Output token, default to JSON
 #
-def output_token(match, type, number)
-
-  match   ||= "ERROR"
-  type    ||= "json"
-  number  ||= 0
-
+def output_token(match, type, number=0)
+  
   tstamp = Time.now.to_i
   cmatch = tokenize_customer("#{match}")
   message = match + ":" + type + ":" + number
