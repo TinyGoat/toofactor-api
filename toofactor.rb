@@ -30,11 +30,11 @@ configure :production do
   # Redis
   #
   ENV["REDISTOGO_URL"] = 'redis://redistogo:809165c597aee3f873f3a0776ba03cac@gar.redistogo.com:9163'
-  uri = URI.parse(ENV["REDISTOGO_URL"])    
-  $redis_customer = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)                                                             
-  $redis_token    = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password) 
+  uri = URI.parse(ENV["REDISTOGO_URL"])
+  $redis_customer = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+  $redis_token    = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
   $redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
- 
+
   # Headers and caching
   #
   sha1, date = `git log HEAD~1..HEAD --pretty=format:%h^%ci`.strip.split('^')
@@ -49,9 +49,9 @@ end
 configure :development do
 
   $redis_customer = Redis.new(:host => "127.0.0.1", :port => 6379)
-  $redis_token    = Redis.new(:host => "127.0.0.1", :port => 6379) 
+  $redis_token    = Redis.new(:host => "127.0.0.1", :port => 6379)
   $redis_log      = Redis.new(:host => "127.0.0.1", :port => 6379)
-  
+
   set :dump_errors, true
   set :raise_errors, true
   set :logging, true
@@ -91,7 +91,7 @@ end
 def client_purl?(purl)
   $redis_token.exists(purl)
 end
- 
+
 # Record tokens & URL's for verification
 #
 def record_client_token(client_sha, token)
@@ -123,14 +123,14 @@ end
 #
 def tokenize(min, max, token)
   token = ""
-  (min..max).each do 
+  (min..max).each do
     token = token + gen_hex
   end
   return token
 end
 
 def tokenize_customer(match)
-  customer = $redis_customer.get(match) 
+  customer = $redis_customer.get(match)
   return tokenize(0, 7, customer)
 end
 
@@ -141,25 +141,37 @@ end
 #  true if Float(number) rescue false
 #end
 
-
 # Send token to client phone
 #
 def send_sms(cmatch, tstamp, number)
   #if (valid_number?(number))
     account_sid = 'AC7cf1d4ccfee943d89892eadd0dbb255e'
     auth_token = 'e32e80fd3d2bea9fe0133a410866189d'
-    begin
+    response = begin
       @client = Twilio::REST::Client.new account_sid, auth_token
       sms_token_status = @client.account.sms.messages.create(
         :from => '+14155992671',
         :to => number,
         :body => cmatch
         ).status
-        record_sms_token(cmatch, tstamp)
+      record_sms_token(cmatch, tstamp)
+      status 200
+      sms_token_status
     rescue
+      status 500
       'Twilio Error'
     end
   #end
+  case request.preferred_type
+    when 'application/json'
+      json :response => response
+    when 'application/xml'
+      builder do |xml|
+        xml.response(response)
+      end
+    else
+      response.to_s
+  end
 end
 
 # Create unique, expirable client URL's
@@ -174,7 +186,7 @@ end
 
 def create_token_url(cmatch)
   token_url = $base_url + "token/" + cmatch
-end 
+end
 
 
 # Token options: JSON and XML
@@ -197,31 +209,27 @@ end
 
 # Output token, default to JSON
 #
-def output_token(match, type, number)
-  
-  match   ||= "ERROR" 
-  type    ||= "json"
-  number  ||= 0
+def output_token(match, type, number=0)
   
   tstamp = Time.now.to_i
   cmatch = tokenize_customer("#{match}")
   message = match + ":" + type + ":" + number
-  log_to_redis(message)    
-  
+  log_to_redis(message)
+
   # Offer various output formats
   #
-  case type   
+  case type
     when "sms"
       send_sms(cmatch, tstamp, number)
-    when "json"  
+    when "json"
       json_token(cmatch, tstamp)
     when "xml"
       xml_token(cmatch, tstamp)
-    else  
+    else
       json_token(cmatch, tstamp)
   end
-end 
- 
+end
+
 # Determine if a client URL/token is valid
 #
 get '/token/*', '/client/*' do |purl|
@@ -252,4 +260,3 @@ end
 post '*' do
   status 418
 end
-
