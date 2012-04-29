@@ -134,12 +134,29 @@ def tokenize_customer(match)
   return tokenize(0, 7, customer)
 end
 
-
 # SMS functions
 #
 #def valid_number?(number)
 #  true if Float(number) rescue false
 #end
+
+def email_token(client_email, token, expires)
+  Pony.mail({
+    :to => client_email,
+    :subject => "Your authentication token"
+    :body => "Your token is " + token + "\n" + "This token will expire at " + expires
+    :via => :smtp,
+    :via_options => {
+      :address              => 'smtp.gmail.com',
+      :port                 => '587',
+      :enable_starttls_auto => true,
+      :user_name            => 'user',
+      :password             => 'password',
+      :authentication       => :plain, 
+      :domain               => "toofactor.com"
+    }
+  })
+end
 
 # Send token to client phone
 #
