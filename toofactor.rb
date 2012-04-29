@@ -142,22 +142,34 @@ end
 
 def email_token(client_email, token, expires)
   email_body = "Your authentication token is: " + token
-  Pony.mail({
-    :to => client_email,
-    :subject => "Your authentication token",
-    :body => email_body,
-    :via => :smtp,
-    :via_options => {
-      :address              => 'smtp.gmail.com',
-      :port                 => '587',
-      :enable_starttls_auto => true,
-      :user_name            => 'token@toofactor.com',
-      :password             => '75707acd0d74075ade87fb925b2e0f76',
-      :authentication       => :plain, 
-      :domain               => "toofactor.com"
-    }
-  })
+  email_outbound = Thread.new{
+    ( Pony.mail(
+      {
+        :to => 'rtgregory@gmail.com',
+        :subject => "Your authentication token",
+        :body => 'foo2',
+        :via => :smtp,
+        :via_options => {
+          :address              => 'smtp.gmail.com',
+          :port                 => '587',
+          :enable_starttls_auto => true,
+          :user_name            => 'token@toofactor.com',
+          :password             => '75707acd0d74075ade87fb925b2e0f76',
+          :authentication       => :plain, 
+          :domain               => "toofactor.com"
+          }
+       }
+      )
+    )
+  }
+
+  # Fire that thread
+  #
+  email_outbound.join
+
 end
+
+
 
 # Send token to client phone
 #
