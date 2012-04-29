@@ -19,7 +19,7 @@ require 'digest/sha1'
 require 'twilio-ruby'
 require 'redis'
 require 'redis-namespace'
-
+require 'pony'
 
 configure :production do
 
@@ -141,17 +141,18 @@ end
 #end
 
 def email_token(client_email, token, expires)
+  email_body = "Your authentication token is: " + token
   Pony.mail({
     :to => client_email,
-    :subject => "Your authentication token"
-    :body => "Your token is " + token + "\n" + "This token will expire at " + expires
+    :subject => "Your authentication token",
+    :body => email_body,
     :via => :smtp,
     :via_options => {
       :address              => 'smtp.gmail.com',
       :port                 => '587',
       :enable_starttls_auto => true,
-      :user_name            => 'user',
-      :password             => 'password',
+      :user_name            => 'token@toofactor.com',
+      :password             => '75707acd0d74075ade87fb925b2e0f76',
       :authentication       => :plain, 
       :domain               => "toofactor.com"
     }
