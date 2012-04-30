@@ -142,6 +142,9 @@ end
 
 def email_token(client_email, token, expires)
   email_body = "Your authentication token is: " + token
+  
+  # Generate email thread to send token
+  #
   email_outbound = Thread.new{
     ( Pony.mail(
       {
@@ -168,8 +171,6 @@ def email_token(client_email, token, expires)
   email_outbound.join
 
 end
-
-
 
 # Send token to client phone
 #
