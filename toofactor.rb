@@ -32,7 +32,8 @@ configure :production do
   ENV["REDISTOGO_URL"] = 'redis://redistogo:809165c597aee3f873f3a0776ba03cac@gar.redistogo.com:9163'
   uri = URI.parse(ENV["REDISTOGO_URL"])
   $redis_customer = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
-  $redis_token    = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+    $redis_token    = Redis::Namespace.new(:token, :redis => $redis_customer)
+    $redis_dev      = Redis::Namespace.new(:dev, :redis => $redis_customer)
   $redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
 
   # Headers and caching
@@ -49,7 +50,8 @@ end
 configure :development do
 
   $redis_customer = Redis.new(:host => "127.0.0.1", :port => 6379)
-  $redis_token    = Redis.new(:host => "127.0.0.1", :port => 6379)
+    $redis_dev      = Redis::Namespace.new(:dev, :redis => $redis_customer)
+    $redis_token    = Redis::Namespace.new(:token, :redis => $redis_customer)
   $redis_log      = Redis.new(:host => "127.0.0.1", :port => 6379)
 
   set :dump_errors, true
@@ -222,10 +224,10 @@ end
 
 # Token options: JSON and XML
 #
-def json_token(cmatch, tstamp)
+def json_token(cmatch, tstamp, expiration)
   client_url    = create_client_hash(cmatch, tstamp)
   token_url     = create_token_url(cmatch)
-  token_expires = tstamp + 90
+  token_expires = tstamp + expiration
   json :auth => cmatch, :timestamp => tstamp, :expires => token_expires, :token_url => token_url, :client_url => client_url
 end
 
@@ -240,24 +242,25 @@ end
 
 # Output token, default to JSON
 #
-def output_token(match, type, number=0)
-  
+def output_token(match, type, number="0")
   tstamp = Time.now.to_i
   cmatch = tokenize_customer("#{match}")
-  message = match + ":" + type + ":" + number
+  message = match + ":" + number + ":" + type
   log_to_redis(message)
 
   # Offer various output formats
   #
   case type
     when "sms"
-      send_sms(cmatch, tstamp, number)
+      send_sms(cmatch, tstamp, number, 90)
     when "json"
-      json_token(cmatch, tstamp)
+      json_token(cmatch, tstamp, 90)
     when "xml"
-      xml_token(cmatch, tstamp)
+      xml_token(cmatch, tstamp, 90)
+    when "email"
+      email_token(cmatch, tstamp, 90)
     else
-      json_token(cmatch, tstamp)
+      json_token(cmatch, tstamp, 90)
   end
 end
 
