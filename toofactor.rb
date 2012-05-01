@@ -142,17 +142,19 @@ end
 #  true if Float(number) rescue false
 #end
 
-def email_token(client_email, token, expires)
-  email_body = "Your authentication token is: " + token
-  
+def email_token(client_email, token, tstamp, expiration)
+  expires_on = Time.at(tstamp + expiration)
+  email_body = "Your authentication token is: " + token.to_s + "\n" + \
+    "This token will expires on " + expires_on.hour.to_s + ":" + expires_on.min.to_s
+
   # Generate email thread to send token
   #
   email_outbound = Thread.new{
     ( Pony.mail(
       {
-        :to => 'rtgregory@gmail.com',
-        :subject => "Your authentication token",
-        :body => 'foo2',
+        :to => client_email,
+        :subject => "Your authentication Token",
+        :body => email_body,
         :via => :smtp,
         :via_options => {
           :address              => 'smtp.gmail.com',
@@ -221,7 +223,6 @@ def create_token_url(cmatch)
   token_url = $base_url + "token/" + cmatch
 end
 
-
 # Token options: JSON and XML
 #
 def json_token(cmatch, tstamp, expiration)
@@ -231,12 +232,12 @@ def json_token(cmatch, tstamp, expiration)
   json :auth => cmatch, :timestamp => tstamp, :expires => token_expires, :token_url => token_url, :client_url => client_url
 end
 
-def xml_token(cmatch, tstamp)
+def xml_token(cmatch, tstamp, expiration)
   @client_url     = create_client_hash(cmatch, tstamp)
   @cmatch         = cmatch
   @timestamp      = tstamp
   @token_url      = create_token_url(cmatch)
-  @token_expires  = tstamp + 90
+  @token_expires  = tstamp + expiration
   builder :token
 end
 
@@ -258,7 +259,7 @@ def output_token(match, type, number="0")
     when "xml"
       xml_token(cmatch, tstamp, 90)
     when "email"
-      email_token(cmatch, tstamp, 90)
+      email_token(number, cmatch, tstamp, 300)
     else
       json_token(cmatch, tstamp, 90)
   end
