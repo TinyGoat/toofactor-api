@@ -30,9 +30,10 @@ configure :production do
   #
   ENV["REDISTOGO_URL"] = 'redis://redistogo:809165c597aee3f873f3a0776ba03cac@gar.redistogo.com:9163'
   uri = URI.parse(ENV["REDISTOGO_URL"])
-  $redis_customer = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
-    $redis_token    = Redis::Namespace.new(:token, :redis => $redis_customer)
-    $redis_dev      = Redis::Namespace.new(:dev, :redis => $redis_customer)
+  $redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+    $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
+    $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
+    $redis_dev        = Redis::Namespace.new(:dev, :redis => $redis)
   $redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
 
   # Headers and caching
@@ -48,15 +49,16 @@ end
 
 configure :development do
 
-  $redis_customer = Redis.new(:host => "127.0.0.1", :port => 6379)
-    $redis_dev      = Redis::Namespace.new(:dev, :redis => $redis_customer)
-    $redis_token    = Redis::Namespace.new(:token, :redis => $redis_customer)
-  $redis_log      = Redis.new(:host => "127.0.0.1", :port => 6379)
-
   set :dump_errors, true
   set :raise_errors, true
   set :logging, true
   set :show_exceptions, true
+
+  $redis = Redis.new(:host => "127.0.0.1", :port => 6379)
+    $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
+    $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
+    $redis_dev        = Redis::Namespace.new(:dev, :redis => $redis)
+  $redis_log      = Redis.new(:host => "127.0.0.1", :port => 6379)
 
 end
 
@@ -142,9 +144,9 @@ end
 #end
 
 def email_token(client_email, token, tstamp, expiration)
-  expires_on = Time.at(tstamp + expiration)
+  expires_on = Time.at(tstamp + expiration).strftime("Today at %I:%M%p %Z")
   email_body = "Your authentication token is: " + token.to_s + "\n" + \
-    "This token will expires on " + expires_on.hour.to_s + ":" + expires_on.min.to_s
+    "This token will expires on " + expires_on
 
   # Generate email thread to send token
   #
