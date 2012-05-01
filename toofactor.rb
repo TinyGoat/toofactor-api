@@ -12,7 +12,6 @@ require 'sinatra'
 require 'sinatra/cookies'
 require 'sinatra/multi_route'
 require 'sinatra/json'
-
 require 'builder'
 require 'haml'
 require 'digest/sha1'
