@@ -144,9 +144,24 @@ end
 #end
 
 def email_token(client_email, token, tstamp, expiration)
-  expires_on = Time.at(tstamp + expiration).strftime("today at %I:%M%p %Z")
+  
+  pdt = Timezone::Zone.new :zone => 'America/Los_Angeles'
+  mdt = Timezone::Zone.new :zone => 'America/Denver'
+  cdt = Timezone::Zone.new :zone => 'America/Chicago'
+  edt = Timezone::Zone.new :zone => 'America/New_york'
+  
+  pdt_expires = pdt.time Time.at(tstamp + expiration)
+  mdt_expires = mdt.time Time.at(tstamp + expiration)
+  cdt_expires = cdt.time Time.at(tstamp + expiration)
+  edt_expires = edt.time Time.at(tstamp + expiration)
+
+  output = "This token expires on " + pdt_expires.strftime("%I:%M%p PDT") + "\n",
+    mdt_expires.strftime("%I:%M%p MDT") + "\n",
+    cdt_expires.strftime("%I:%M%p CDT") + "\n",
+    edt_expires.strftime("%I:%M%p EDT")
+  
   email_body = "Your authentication token is: " + token.to_s + "\n" + \
-    "This token expires " + expires_on
+    output
 
   # Generate email thread to send token
   #
