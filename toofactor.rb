@@ -12,7 +12,6 @@ require 'sinatra'
 require 'sinatra/cookies'
 require 'sinatra/multi_route'
 require 'sinatra/json'
-
 require 'builder'
 require 'haml'
 require 'digest/sha1'
@@ -31,9 +30,10 @@ configure :production do
   #
   ENV["REDISTOGO_URL"] = 'redis://redistogo:809165c597aee3f873f3a0776ba03cac@gar.redistogo.com:9163'
   uri = URI.parse(ENV["REDISTOGO_URL"])
-  $redis_customer = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
-    $redis_token    = Redis::Namespace.new(:token, :redis => $redis_customer)
-    $redis_dev      = Redis::Namespace.new(:dev, :redis => $redis_customer)
+  $redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+    $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
+    $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
+    $redis_dev        = Redis::Namespace.new(:dev, :redis => $redis)
   $redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
 
   # Headers and caching
@@ -49,15 +49,16 @@ end
 
 configure :development do
 
-  $redis_customer = Redis.new(:host => "127.0.0.1", :port => 6379)
-    $redis_dev      = Redis::Namespace.new(:dev, :redis => $redis_customer)
-    $redis_token    = Redis::Namespace.new(:token, :redis => $redis_customer)
-  $redis_log      = Redis.new(:host => "127.0.0.1", :port => 6379)
-
   set :dump_errors, true
   set :raise_errors, true
   set :logging, true
   set :show_exceptions, true
+
+  $redis = Redis.new(:host => "127.0.0.1", :port => 6379)
+    $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
+    $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
+    $redis_dev        = Redis::Namespace.new(:dev, :redis => $redis)
+  $redis_log      = Redis.new(:host => "127.0.0.1", :port => 6379)
 
 end
 
@@ -143,9 +144,24 @@ end
 #end
 
 def email_token(client_email, token, tstamp, expiration)
-  expires_on = Time.at(tstamp + expiration)
+  
+  pdt = Timezone::Zone.new :zone => 'America/Los_Angeles'
+  mdt = Timezone::Zone.new :zone => 'America/Denver'
+  cdt = Timezone::Zone.new :zone => 'America/Chicago'
+  edt = Timezone::Zone.new :zone => 'America/New_york'
+  
+  pdt_expires = pdt.time Time.at(tstamp + expiration)
+  mdt_expires = mdt.time Time.at(tstamp + expiration)
+  cdt_expires = cdt.time Time.at(tstamp + expiration)
+  edt_expires = edt.time Time.at(tstamp + expiration)
+
+  output = "This token expires on " + pdt_expires.strftime("%I:%M%p PDT") + "\n",
+    mdt_expires.strftime("%I:%M%p MDT") + "\n",
+    cdt_expires.strftime("%I:%M%p CDT") + "\n",
+    edt_expires.strftime("%I:%M%p EDT")
+  
   email_body = "Your authentication token is: " + token.to_s + "\n" + \
-    "This token will expires on " + expires_on.hour.to_s + ":" + expires_on.min.to_s
+    output
 
   # Generate email thread to send token
   #
@@ -168,12 +184,11 @@ def email_token(client_email, token, tstamp, expiration)
        }
       )
     )
-  }
-
-  # Fire that thread
-  #
-  email_outbound.join
-
+  } 
+    # Fire that thread
+    #
+    email_outbound.join
+    json :token => token, :email_address => client_email, :token_generated => tstamp, :token_expires => tstamp + expiration, :status => 'Email sent'
 end
 
 # Send token to client phone
