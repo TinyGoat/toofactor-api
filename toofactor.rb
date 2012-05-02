@@ -146,7 +146,7 @@ end
 def email_token(client_email, token, tstamp, expiration)
   expires_on = Time.at(tstamp + expiration).strftime("today at %I:%M%p %Z")
   email_body = "Your authentication token is: " + token.to_s + "\n" + \
-    "This token will expires " + expires_on
+    "This token expires " + expires_on
 
   # Generate email thread to send token
   #
@@ -169,12 +169,11 @@ def email_token(client_email, token, tstamp, expiration)
        }
       )
     )
-  }
-
-  # Fire that thread
-  #
-  email_outbound.join
-  json :token => token, :email_address => client_email, :timestamp => tstamp, :expires => tstamp + expiration, :status => 'Email sent'
+  } 
+    # Fire that thread
+    #
+    email_outbound.join
+    json :token => token, :email_address => client_email, :token_generated => tstamp, :token_expires => tstamp + expiration, :status => 'Email sent'
 end
 
 # Send token to client phone
