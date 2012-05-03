@@ -155,14 +155,14 @@ def email_token(client_email, token, tstamp, expiration)
   cdt_expires = cdt.time Time.at(tstamp + expiration)
   edt_expires = edt.time Time.at(tstamp + expiration)
 
-  output = "This token expires on " + pdt_expires.strftime("%I:%M%p PDT") + "\n",
-    mdt_expires.strftime("%I:%M%p MDT") + "\n",
-    cdt_expires.strftime("%I:%M%p CDT") + "\n",
-    edt_expires.strftime("%I:%M%p EDT")
-  
-  email_body = "Your authentication token is: " + token.to_s + "\n" + \
-    output
+  pdt_output = pdt_expires.strftime("%I:%M%p PDT")
+  mdt_output = mdt_expires.strftime("%I:%M%p MDT")
+  cdt_output = cdt_expires.strftime("%I:%M%p CDT")
+  edt_output = edt_expires.strftime("%I:%M%p EDT")
 
+  output = "This token expires in 5 minutes: \n\n" + pdt_output + "\n" + mdt_output + "\n" + cdt_output + "\n" + edt_output
+  email_body = "Your authentication token is: " + token.to_s + "\n" + output + "\n\n"
+  
   # Generate email thread to send token
   #
   email_outbound = Thread.new{
