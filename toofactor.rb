@@ -144,12 +144,12 @@ end
 #end
 
 def email_token(client_email, token, tstamp, expiration)
-  
+
   pdt = Timezone::Zone.new :zone => 'America/Los_Angeles'
   mdt = Timezone::Zone.new :zone => 'America/Denver'
   cdt = Timezone::Zone.new :zone => 'America/Chicago'
   edt = Timezone::Zone.new :zone => 'America/New_york'
-  
+
   pdt_expires = pdt.time Time.at(tstamp + expiration)
   mdt_expires = mdt.time Time.at(tstamp + expiration)
   cdt_expires = cdt.time Time.at(tstamp + expiration)
@@ -162,7 +162,7 @@ def email_token(client_email, token, tstamp, expiration)
 
   output = "This token expires in 5 minutes: \n\n" + pdt_output + "\n" + mdt_output + "\n" + cdt_output + "\n" + edt_output
   email_body = "Your authentication token is: " + token.to_s + "\n" + output + "\n\n"
-  
+
   # Generate email thread to send token
   #
   email_outbound = Thread.new{
@@ -178,13 +178,13 @@ def email_token(client_email, token, tstamp, expiration)
           :enable_starttls_auto => true,
           :user_name            => 'token@toofactor.com',
           :password             => '75707acd0d74075ade87fb925b2e0f76',
-          :authentication       => :plain, 
+          :authentication       => :plain,
           :domain               => "toofactor.com"
           }
        }
       )
     )
-  } 
+  }
     # Fire that thread
     #
     email_outbound.join
