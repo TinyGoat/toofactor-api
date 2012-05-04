@@ -179,7 +179,6 @@ end
 # Send token to client phone
 #
 def send_sms(cmatch, tstamp, number)
-  #if (valid_number?(number))
     account_sid = 'AC7cf1d4ccfee943d89892eadd0dbb255e'
     auth_token = 'e32e80fd3d2bea9fe0133a410866189d'
     response = begin
@@ -196,7 +195,6 @@ def send_sms(cmatch, tstamp, number)
       status 500
       'Twilio Error'
     end
-  #end
   case request.preferred_type
     when 'application/json'
       json :response => response
