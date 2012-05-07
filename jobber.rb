@@ -8,6 +8,16 @@ def push_to_sql
   
 end
 
+def notify_user
+  
+end
+
+def expire_user
+  
+end
+
+
+
 # Loop
 #
 $redis_log.subscribe('LOG') do |on|

@@ -145,8 +145,8 @@ end
 
 def email_token(client_email, token, tstamp, expiration)
 
-  output = "This token expires in 5 minutes"
-  email_body = "Your authentication token is: #{token.to_s}\n#{output}\n\n"
+  output = "This token will expire in 5 minutes."
+  email_body = "Your authentication token is: #{token.to_s}\n\n#{output}\n\n"
 
   # Generate email thread to send token
   #
