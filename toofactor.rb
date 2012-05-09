@@ -72,7 +72,7 @@ error do
   'Sorry there was a nasty error - ' + env['sinatra.error'].name
 end
 
-$base_url = "http://dev.toofactor.com/"
+$base_url = "http://api.toofactor.com/"
 $default_expire = 90
 
 # Geoff likes logs
