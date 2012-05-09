@@ -18,7 +18,7 @@ require 'digest/sha1'
 require 'twilio-ruby'
 require 'redis'
 require 'redis-namespace'
-require 'pony'
+#require 'pony'
 
 configure :production do
 
