@@ -262,9 +262,9 @@ end
 #
 get '/token/*', '/client/*' do |purl|
   if (client_purl?(purl))
-    status 202
+    halt 202, 'Confirmed as valid.'
   else
-    status 410
+    halt 410, 'Sorry, invalid or expired'
   end
 end
 
@@ -275,16 +275,16 @@ get '/api/*/*/*' do |*args|
   if (customer?(match))
     output_token(match, type, number)
   else
-    status 401
+    halt 401, 'Sorry, that looks like an invalid API key'
   end
 end
 
 # Paranoia will destroy ya
 #
 patch '*' do
-  status 418
+  halt 418, 'Donec non loquor turpis'
 end
 
 post '*' do
-  status 418
+  halt 418, 'Lorem ipsum Omitto'
 end
