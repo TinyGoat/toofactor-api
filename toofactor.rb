@@ -4,10 +4,10 @@ require 'sinatra'
   set :root, File.dirname(__FILE__)
   set :sessions, false
   set :static, false
-  set :static_cache_control, [:private, :max_age => 60]
+  set :static_cache_control, [:private, :max_age => 0]
   set :public_folder, 'public'
   set :environment, :production
-  set :server, %w[unicorn thin mongrel webrick]
+  set :server, %w[unicorn]
 
 require 'sinatra/cookies'
 require 'sinatra/multi_route'
@@ -18,7 +18,7 @@ require 'digest/sha1'
 require 'twilio-ruby'
 require 'redis'
 require 'redis-namespace'
-#require 'pony'
+require 'pony'
 
 configure :production do
 
