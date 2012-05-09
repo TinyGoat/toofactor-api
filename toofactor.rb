@@ -36,15 +36,6 @@ configure :production do
     $redis_dev        = Redis::Namespace.new(:dev, :redis => $redis)
   $redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
 
-  # Headers and caching
-  #
-  sha1, date = `git log HEAD~1..HEAD --pretty=format:%h^%ci`.strip.split('^')
-
-  before do
-    cache_control :public, :must_revalidate, :max_age=>0
-    etag sha1
-    last_modified date
-  end
 end
 
 configure :development do
