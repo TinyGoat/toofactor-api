@@ -65,7 +65,7 @@ end
 # Find Godot
 #
 not_found do
-  status 404
+  status 418
 end
 
 error do
