@@ -18,7 +18,7 @@ require 'digest/sha1'
 require 'twilio-ruby'
 require 'redis'
 require 'redis-namespace'
-require 'pony'
+#require 'pony'
 
 configure :production do
 
@@ -134,7 +134,7 @@ end
 
 def tokenize_customer(match)
   customer = $redis_customer.get(match)
-  return tokenize(0, 7, customer)
+  return tokenize(0, 5, customer)
 end
 
 # SMS functions
@@ -144,24 +144,9 @@ end
 #end
 
 def email_token(client_email, token, tstamp, expiration)
-  
-  pdt = Timezone::Zone.new :zone => 'America/Los_Angeles'
-  mdt = Timezone::Zone.new :zone => 'America/Denver'
-  cdt = Timezone::Zone.new :zone => 'America/Chicago'
-  edt = Timezone::Zone.new :zone => 'America/New_york'
-  
-  pdt_expires = pdt.time Time.at(tstamp + expiration)
-  mdt_expires = mdt.time Time.at(tstamp + expiration)
-  cdt_expires = cdt.time Time.at(tstamp + expiration)
-  edt_expires = edt.time Time.at(tstamp + expiration)
 
-  output = "This token expires on " + pdt_expires.strftime("%I:%M%p PDT") + "\n",
-    mdt_expires.strftime("%I:%M%p MDT") + "\n",
-    cdt_expires.strftime("%I:%M%p CDT") + "\n",
-    edt_expires.strftime("%I:%M%p EDT")
-  
-  email_body = "Your authentication token is: " + token.to_s + "\n" + \
-    output
+  output = "This token will expire in 5 minutes."
+  email_body = "Your authentication token is: #{token.to_s}\n\n#{output}\n\n"
 
   # Generate email thread to send token
   #
@@ -178,13 +163,13 @@ def email_token(client_email, token, tstamp, expiration)
           :enable_starttls_auto => true,
           :user_name            => 'token@toofactor.com',
           :password             => '75707acd0d74075ade87fb925b2e0f76',
-          :authentication       => :plain, 
+          :authentication       => :plain,
           :domain               => "toofactor.com"
           }
        }
       )
     )
-  } 
+  }
     # Fire that thread
     #
     email_outbound.join
@@ -194,7 +179,6 @@ end
 # Send token to client phone
 #
 def send_sms(cmatch, tstamp, number)
-  #if (valid_number?(number))
     account_sid = 'AC7cf1d4ccfee943d89892eadd0dbb255e'
     auth_token = 'e32e80fd3d2bea9fe0133a410866189d'
     response = begin
@@ -211,7 +195,6 @@ def send_sms(cmatch, tstamp, number)
       status 500
       'Twilio Error'
     end
-  #end
   case request.preferred_type
     when 'application/json'
       json :response => response
@@ -258,7 +241,7 @@ end
 
 # Output token, default to JSON
 #
-def output_token(match, type, number="0")
+def output_token(match, type, number)
   tstamp = Time.now.to_i
   cmatch = tokenize_customer("#{match}")
   message = match + ":" + number + ":" + type
@@ -294,11 +277,11 @@ end
 #
 get '/api/*/*/*' do |*args|
   match, type, number = args
-    if (customer?(match))
-      output_token(match, type, number)
-    else
-      status 401
-    end
+  if (customer?(match))
+    output_token(match, type, number)
+  else
+    status 401
+  end
 end
 
 # Paranoia will destroy ya
