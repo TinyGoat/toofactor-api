@@ -36,6 +36,10 @@ configure :production do
     $redis_dev        = Redis::Namespace.new(:dev, :redis => $redis)
   $redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
 
+  before do
+    cache_control :nocache
+  end
+
 end
 
 configure :development do
