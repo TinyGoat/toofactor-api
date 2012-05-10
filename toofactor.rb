@@ -60,7 +60,7 @@ end
 # Find Godot
 #
 not_found do
-  status 418
+  erb :index
 end
 
 error do
