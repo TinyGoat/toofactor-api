@@ -7,7 +7,7 @@ uri = URI.parse(ENV["REDISTOGO_URL"])
 begin
   @redis_log = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
   @redis_log.inspect
-rescue Exception => e
+rescue
   p "Cannot access Redis instance.."
   sleep 10
   retry
@@ -28,7 +28,7 @@ begin
       puts "#{customer_api} - #{client_address} #{type}"
     end
   end
-rescue Exception => e
+rescue
   p "Error accessing Redis channel .. retrying"
   sleep 2
   retry
