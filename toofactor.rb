@@ -261,7 +261,7 @@ end
 # Indexy
 #
 get '/' do
-  erb :index
+  'Sorry, api.toofactor.com only services API calls.'
 end
 
 # Determine if a client URL/token is valid
