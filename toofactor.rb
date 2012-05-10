@@ -6,7 +6,7 @@ require 'sinatra'
   set :static, false
   set :static_cache_control, [:private, :max_age => 0]
   set :public_folder, 'public'
-  set :environment, :production
+  set :environment, :development
   set :server, %w[unicorn]
 
 require 'sinatra/cookies'
@@ -103,10 +103,10 @@ end
 
 # Same for SMS
 #
-def record_sms_token(cmatch, tstamp)
+def record_sms_token(cmatch, tstamp, expiration)
   $redis_token.multi do
     $redis_token.set(cmatch, tstamp)
-    $redis_token.expire(cmatch, 90)
+    $redis_token.expire(cmatch, expiration)
   end
 end
 
@@ -173,7 +173,7 @@ end
 
 # Send token to client phone
 #
-def send_sms(cmatch, tstamp, number)
+def send_sms(cmatch, tstamp, number, expiration)
     account_sid = 'AC7cf1d4ccfee943d89892eadd0dbb255e'
     auth_token = 'e32e80fd3d2bea9fe0133a410866189d'
     response = begin
@@ -183,7 +183,7 @@ def send_sms(cmatch, tstamp, number)
         :to => number,
         :body => cmatch
         ).status
-      record_sms_token(cmatch, tstamp)
+      record_sms_token(cmatch, tstamp, expiration)
       status 200
       sms_token_status
     rescue
