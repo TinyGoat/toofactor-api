@@ -258,6 +258,12 @@ def output_token(match, type, number)
   end
 end
 
+# Indexy
+#
+get '/' do
+  erb :index
+end
+
 # Determine if a client URL/token is valid
 #
 get '/token/*', '/client/*' do |purl|
