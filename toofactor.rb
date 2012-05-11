@@ -268,9 +268,9 @@ end
 #
 get '/token/*', '/client/*' do |purl|
   if (client_purl?(purl))
-    halt 202, erb :valid
+    halt 202, erb(:valid)
   else
-    halt 410, 'That token is invalid or has expired.'
+    halt 410, erb(:expired)
   end
 end
 
@@ -281,7 +281,7 @@ get '/api/*/*/*' do |*args|
   if (customer?(match))
     output_token(match, type, number)
   else
-    halt 401, 'Sorry, that API key does not seem valid.'
+    halt 401, erb(:invalid_api)
   end
 end
 
