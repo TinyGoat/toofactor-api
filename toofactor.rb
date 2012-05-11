@@ -288,9 +288,9 @@ end
 # Paranoia will destroy ya
 #
 patch '*' do
-  halt 418, erb(:418)
+  halt 418, erb(:teapot)
 end
 
 post '*' do
-  halt 418, erb(:418)
+  halt 418, erb(:teapot)
 end
