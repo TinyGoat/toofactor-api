@@ -288,9 +288,9 @@ end
 # Paranoia will destroy ya
 #
 patch '*' do
-  halt 418, 'Donec non loquor turpis'
+  halt 418, erb(:418)
 end
 
 post '*' do
-  halt 418, 'Lorem ipsum Omitto'
+  halt 418, erb(:418)
 end
