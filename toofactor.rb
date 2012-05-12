@@ -276,7 +276,7 @@ end
 
 # Produce token via API call
 #
-get '/api/*/*/?*' do |*args|
+get '/api/*/*/*' do |*args|
   match, type, number = args
   if (customer?(match))
     output_token(match, type, number)
