@@ -185,6 +185,7 @@ def send_sms(cmatch, tstamp, number, expiration)
         ).status
       record_sms_token(cmatch, tstamp, expiration)
       status 200
+      token_url = create_token_url(cmatch)
       sms_token_status
     rescue
       status 500
@@ -198,7 +199,7 @@ def send_sms(cmatch, tstamp, number, expiration)
         xml.response(response)
       end
     else
-      response.to_s
+      json :response => response.to_s, :token => cmatch, :url => token_url 
   end
 end
 
