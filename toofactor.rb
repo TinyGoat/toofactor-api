@@ -6,7 +6,7 @@ require 'sinatra'
   set :static, false
   set :static_cache_control, [:private, :max_age => 0]
   set :public_folder, 'public'
-  set :environment, :production
+  set :environment, :development
   set :server, %w[unicorn]
 
 require 'sinatra/cookies'
@@ -60,7 +60,7 @@ end
 # Find Godot
 #
 not_found do
-  erb :index
+  redirect 'http://www.toofactor.com', 301
 end
 
 error do
@@ -134,14 +134,11 @@ end
 
 # SMS functions
 #
-#def valid_number?(number)
-#  true if Float(number) rescue false
-#end
-
 def email_token(client_email, token, tstamp, expiration)
 
   output = "This token will expire in 5 minutes."
   email_body = "Your authentication token is: #{token.to_s}\n\n#{output}\n\n"
+  token_url = create_token_url(token)
 
   # Generate email thread to send token
   #
@@ -168,7 +165,7 @@ def email_token(client_email, token, tstamp, expiration)
     # Fire that thread
     #
     email_outbound.join
-    json :token => token, :email_address => client_email, :token_generated => tstamp, :token_expires => tstamp + expiration, :status => 'Email sent'
+    json :token => token, :token_url => token_url, :email_address => client_email, :token_generated => tstamp, :token_expires => tstamp + expiration, :status => 'Email sent'
 end
 
 # Send token to client phone
