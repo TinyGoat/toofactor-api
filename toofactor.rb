@@ -40,6 +40,10 @@ configure :production do
     cache_control :nocache
   end
 
+  not_found do
+    redirect 'http://www.toofactor.com', 302
+  end
+
 end
 
 configure :development do
@@ -55,16 +59,10 @@ configure :development do
     $redis_dev        = Redis::Namespace.new(:dev, :redis => $redis)
   $redis_log      = Redis.new(:host => "127.0.0.1", :port => 6379)
 
-end
+  error do
+    'Sorry there was a nasty error - ' + env['sinatra.error'].name
+  end
 
-# Find Godot
-#
-not_found do
-  redirect 'http://www.toofactor.com', 301
-end
-
-error do
-  'Sorry there was a nasty error - ' + env['sinatra.error'].name
 end
 
 $base_url = "http://api.toofactor.com/"
@@ -264,7 +262,7 @@ end
 
 # Determine if a client URL/token is valid
 #
-get '/token/*', '/client/*' do |purl|
+get '/token/*/?', '/client/*/?' do |purl|
   if (client_purl?(purl))
     halt 202, erb(:valid)
   else
