@@ -196,7 +196,7 @@ def send_sms(cmatch, tstamp, number, expiration)
         xml.response(response)
       end
     else
-      json :response => response.to_s, :token => cmatch, :url => token_url 
+     json :sms_status => response.to_s, :token => cmatch, :token_url => token_url, :phone_number => number, :token_generated => tstamp, :token_expires => tstamp + expiration 
   end
 end
 
