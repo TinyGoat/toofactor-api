@@ -74,14 +74,8 @@ def log_to_redis(message)
   $redis_log.publish("LOG", message)
 end
 
-# Seed baseline test
-#
-$redis_customer.set("1000", "0")
-
 def customer?(confirm)
-  if ($redis_customer.exists(confirm))
-    true if ($redis_customer.get(confirm) == "0") rescue false
-  end
+  $redis_customer.get(confirm) == "0"
 end
 
 def client_purl?(purl)
@@ -126,8 +120,7 @@ def tokenize(min, max, token)
 end
 
 def tokenize_customer(match)
-  customer = $redis_customer.get(match)
-  return tokenize(0, 5, customer)
+  return tokenize(0, 5, match)
 end
 
 # SMS functions
@@ -275,6 +268,7 @@ end
 get '/api/*/*/*' do |*args|
   match, type, number = args
   if (customer?(match))
+    number = "0" if number.empty?
     output_token(match, type, number)
   else
     halt 401, erb(:invalid_api)
