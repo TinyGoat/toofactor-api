@@ -6,14 +6,12 @@ require 'sinatra'
   set :static, false
   set :static_cache_control, [:private, :max_age => 0]
   set :public_folder, 'public'
-  set :environment, :production
+  set :environment, :development
   set :server, %w[unicorn]
 
-require 'sinatra/cookies'
 require 'sinatra/multi_route'
 require 'sinatra/json'
 require 'builder'
-require 'haml'
 require 'digest/sha1'
 require 'twilio-ruby'
 require 'redis'
@@ -267,6 +265,7 @@ end
 #
 get '/api/*/*/*' do |*args|
   match, type, number = args
+  
   if (customer?(match))
     number = "0" if number.empty?
     output_token(match, type, number)
