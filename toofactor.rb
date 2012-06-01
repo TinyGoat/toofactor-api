@@ -16,6 +16,7 @@ require 'digest/sha1'
 require 'twilio-ruby'
 require 'redis'
 require 'redis-namespace'
+require 'crypt-isaac'
 require 'pony'
 
 configure :production do
@@ -103,9 +104,12 @@ end
 # Generate random Hex
 #
 def gen_hex
-  prng = Random.new
-  prng.rand(0..15).to_s(base=16)
+  # prng = Random.new
+  prng = Crypt::ISAAC.new
+  prng.rand(15).to_s(base=16)
 end
+
+
 
 # Potentially set token length per customer
 #
