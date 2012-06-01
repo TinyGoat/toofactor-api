@@ -56,7 +56,7 @@ configure :development do
     $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
     $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
     $redis_dev        = Redis::Namespace.new(:dev, :redis => $redis)
-  $redis_log      = Redis.new(:host => "127.0.0.1", :port => 6379)
+  $redis_log = Redis.new(:host => "127.0.0.1", :port => 6379)
 
   error do
     'Sorry there was a nasty error - ' + env['sinatra.error'].name
