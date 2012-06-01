@@ -3,6 +3,7 @@ GEM
   specs:
     backports (2.5.1)
     builder (3.0.0)
+    crypt-isaac (0.9.1)
     eventmachine (0.12.10)
     haml (3.1.4)
     i18n (0.6.0)
@@ -59,6 +60,7 @@ PLATFORMS
 
 DEPENDENCIES
   builder
+  crypt-isaac
   haml
   pony
   redis
