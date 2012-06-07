@@ -6,7 +6,7 @@ require 'sinatra'
   set :static, false
   set :static_cache_control, [:private, :max_age => 0]
   set :public_folder, 'public'
-  set :environment, :production
+  set :environment, :development
   set :server, %w[unicorn]
 
 require 'sinatra/multi_route'
@@ -77,6 +77,11 @@ def customer?(confirm)
   $redis_customer.get(confirm) == "0"
 end
 
+def dev_customer?(confirm)
+  $redis_dev.get(confirm)
+end
+
+
 def client_purl?(purl)
   $redis_token.exists(purl)
 end
@@ -108,8 +113,6 @@ def gen_hex
   prng = Crypt::ISAAC.new
   prng.rand(15).to_s(base=16)
 end
-
-
 
 # Potentially set token length per customer
 #
@@ -189,7 +192,8 @@ def send_sms(cmatch, tstamp, number, expiration)
         xml.response(response)
       end
     else
-     json :sms_status => response.to_s, :token => cmatch, :token_url => token_url, :phone_number => number, :token_generated => tstamp, :token_expires => tstamp + expiration 
+      token_url = "error" if token_url.nil?
+      json :sms_status => response.to_s, :token => cmatch, :token_url => token_url, :phone_number => number, :token_generated => tstamp, :token_expires => tstamp + expiration 
   end
 end
 
@@ -270,12 +274,16 @@ end
 get '/api/*/*/*' do |*args|
   match, type, number = args
   
-  if (customer?(match))
+  if (dev_customer?(match))
+    number = dev_customer?(match)
+    output_token(match, type, number)
+  elsif (customer?(match))
     number = "0" if number.empty?
     output_token(match, type, number)
   else
     halt 401, erb(:invalid_api)
   end
+
 end
 
 # Paranoia will destroy ya
