@@ -4,5 +4,4 @@ xml.auth do
   xml.timestamp @timestamp
   xml.expires @token_expires
   xml.token_url @token_url
-  xml.client_url @client_url
 end
