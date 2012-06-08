@@ -6,7 +6,7 @@ require 'sinatra'
   set :static, false
   set :static_cache_control, [:private, :max_age => 0]
   set :public_folder, 'public'
-  set :environment, :development
+  set :environment, :production
   set :server, %w[unicorn]
 
 require 'sinatra/multi_route'
