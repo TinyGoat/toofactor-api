@@ -81,28 +81,16 @@ def dev_customer?(confirm)
   $redis_dev.get(confirm)
 end
 
-
 def client_purl?(purl)
   $redis_token.exists(purl)
 end
 
 # Record tokens & URL's for verification
 #
-def record_client_token(client_sha, token)
+def record_token(token, tstamp, expiration=90)
   $redis_token.multi do
-    $redis_token.set(client_sha, token)
-    $redis_token.set(token, client_sha)
-    $redis_token.expire(client_sha, 90)
-    $redis_token.expire(token, 90)
-  end
-end
-
-# Same for SMS
-#
-def record_sms_token(cmatch, tstamp, expiration)
-  $redis_token.multi do
-    $redis_token.set(cmatch, tstamp)
-    $redis_token.expire(cmatch, expiration)
+    $redis_token.set(token, tstamp)
+    $redis_token.expire(token, expiration)
   end
 end
 
@@ -134,7 +122,7 @@ def email_token(client_email, token, tstamp, expiration)
 
   output = "This token will expire in 5 minutes."
   email_body = "Your authentication token is: #{token.to_s}\n\n#{output}\n\n"
-  token_url = create_token_url(token)
+  token_url = create_token_url(token, tstamp)
 
   # Generate email thread to send token
   #
@@ -176,9 +164,9 @@ def send_sms(cmatch, tstamp, number, expiration)
         :to => number,
         :body => cmatch
         ).status
-      record_sms_token(cmatch, tstamp, expiration)
+      record_token(cmatch, tstamp, expiration)
       status 200
-      token_url = create_token_url(cmatch)
+      token_url = create_token_url(cmatch, tstamp)
       sms_token_status
     rescue
       status 500
@@ -199,32 +187,24 @@ end
 
 # Create unique, expirable client URL's
 #
-def create_client_hash(cmatch, tstamp)
-  gohash = cmatch + tstamp.to_s
-  client_sha = Digest::RMD160.new << gohash
-  client_url = $base_url + "client/" + client_sha.to_s
-  record_client_token(client_sha, cmatch)
-  return client_url
-end
-
-def create_token_url(cmatch)
+def create_token_url(cmatch, tstamp)
   token_url = $base_url + "token/" + cmatch
+  record_token(cmatch, tstamp)
+  return token_url
 end
 
 # Token options: JSON and XML
 #
 def json_token(cmatch, tstamp, expiration)
-  client_url    = create_client_hash(cmatch, tstamp)
-  token_url     = create_token_url(cmatch)
+  token_url     = create_token_url(cmatch, tstamp)
   token_expires = tstamp + expiration
   json :auth => cmatch, :timestamp => tstamp, :expires => token_expires, :token_url => token_url
 end
 
 def xml_token(cmatch, tstamp, expiration)
-  @client_url     = create_client_hash(cmatch, tstamp)
   @cmatch         = cmatch
   @timestamp      = tstamp
-  @token_url      = create_token_url(cmatch)
+  @token_url      = create_token_url(cmatch, tstamp)
   @token_expires  = tstamp + expiration
   builder :token
 end
