@@ -14,6 +14,7 @@ require 'sinatra/json'
 require 'builder'
 require 'digest/sha1'
 require 'twilio-ruby'
+require 'nexmo'
 require 'redis'
 require 'redis-namespace'
 require 'crypt-isaac'
@@ -155,6 +156,24 @@ end
 # Send token to client phone
 #
 def send_sms(cmatch, tstamp, number, expiration)
+  
+  # Primary provider
+  #
+  nexmo_reponse = begin
+    nexmo = Nexmo::Client.new('371f3e5d', 'e3218b70')
+    token_url = create_token_url(cmatch, tstamp)
+    record_token(cmatch, tstamp, expiration)
+    sms_primary_response = nexmo.send_message({
+      from: '13059298586',
+      to: number,
+      text: cmatch
+    })
+  rescue
+    send_sms_twilio(cmatch, tstamp, number, expiration)
+  end
+end
+
+def send_sms_twilio(cmatch, tstamp, number, expiration)    
     account_sid = 'AC7cf1d4ccfee943d89892eadd0dbb255e'
     auth_token = 'e32e80fd3d2bea9fe0133a410866189d'
     response = begin
@@ -170,7 +189,7 @@ def send_sms(cmatch, tstamp, number, expiration)
       sms_token_status
     rescue
       status 500
-      'Twilio Error'
+      'SMS Error'
     end
   case request.preferred_type
     when 'application/json'
