@@ -208,8 +208,6 @@ def output_token(match, type, number)
       json_token(cmatch, tstamp, 90)
     when "xml"
       xml_token(cmatch, tstamp, 90)
-    when "email"
-      email_token(number, cmatch, tstamp, 300)
     else
       json_token(cmatch, tstamp, 90)
   end
@@ -236,10 +234,7 @@ end
 get '/api/*/*/*' do |*args|
   match, type, number = args
   
-  if (dev_customer?(match))
-    number = dev_customer?(match)
-    output_token(match, type, number)
-  elsif (customer?(match))
+  if (customer?(match))
     number = "0" if number.empty?
     output_token(match, type, number)
   else
