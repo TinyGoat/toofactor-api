@@ -32,7 +32,6 @@ configure :production do
   $redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
     $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
     $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
-    $redis_dev        = Redis::Namespace.new(:dev, :redis => $redis)
   $redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
 
   before do
@@ -55,7 +54,6 @@ configure :development do
   $redis = Redis.new(:host => "127.0.0.1", :port => 6379)
     $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
     $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
-    $redis_dev        = Redis::Namespace.new(:dev, :redis => $redis)
   $redis_log = Redis.new(:host => "127.0.0.1", :port => 6379)
 
   error do
@@ -75,10 +73,6 @@ end
 
 def customer?(confirm)
   $redis_customer.get(confirm) == "0"
-end
-
-def dev_customer?(confirm)
-  $redis_dev.get(confirm)
 end
 
 def client_purl?(purl)
