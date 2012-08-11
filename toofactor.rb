@@ -18,7 +18,6 @@ require 'nexmo'
 require 'redis'
 require 'redis-namespace'
 require 'crypt-isaac'
-require 'pony'
 
 configure :production do
 
@@ -115,42 +114,6 @@ end
 
 def tokenize_customer(match)
   return tokenize(0, 5, match)
-end
-
-# SMS functions
-#
-def email_token(client_email, token, tstamp, expiration)
-
-  output = "This token will expire in 5 minutes."
-  email_body = "Your authentication token is: #{token.to_s}\n\n#{output}\n\n"
-  token_url = create_token_url(token, tstamp)
-
-  # Generate email thread to send token
-  #
-  email_outbound = Thread.new{
-    ( Pony.mail(
-      {
-        :to => client_email,
-        :subject => "Your authentication Token",
-        :body => email_body,
-        :via => :smtp,
-        :via_options => {
-          :address              => 'smtp.gmail.com',
-          :port                 => '587',
-          :enable_starttls_auto => true,
-          :user_name            => 'token@toofactor.com',
-          :password             => '75707acd0d74075ade87fb925b2e0f76',
-          :authentication       => :plain,
-          :domain               => "toofactor.com"
-          }
-       }
-      )
-    )
-  }
-    # Fire that thread
-    #
-    email_outbound.join
-    json :token => token, :token_url => token_url, :email_address => client_email, :token_generated => tstamp, :token_expires => tstamp + expiration, :status => 'Email sent'
 end
 
 # Send token to client phone
