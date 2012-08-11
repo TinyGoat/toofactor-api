@@ -33,6 +33,7 @@ configure :production do
     $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
     $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
     $redis_log        = Redis::Namespace.new(:log, :redis => $redis)
+    $redis_total      = Redis::Namespace.new(:count, :redis => $redis)
 
   before do
     cache_control :nocache
@@ -55,6 +56,7 @@ configure :development do
     $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
     $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
     $redis_log        = Redis::Namespace.new(:log, :redis => $redis)
+    $redis_total      = Redis::Namespace.new(:count, :redis => $redis)
 
   error do
     'Sorry there was a nasty error - ' + env['sinatra.error'].name
@@ -69,6 +71,10 @@ $default_expire = 90
 #
 def log_to_redis(message, tstamp)
   $redis_log.set(message, tstamp)
+end
+
+def log_totals(match)
+  $redis_total.incr(match)
 end
 
 def customer?(confirm)
@@ -206,6 +212,7 @@ def output_token(match, type, number)
   cmatch = tokenize_customer("#{match}")
   message = match + ":" + number + ":" + type
   log_to_redis(message, tstamp)
+  log_totals(match)
 
   # Offer various output formats
   #
