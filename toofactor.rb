@@ -67,8 +67,8 @@ $default_expire = 90
 
 # Geoff likes logs
 #
-def log_to_redis(message)
-  $redis_log.publish("LOG", message)
+def log_to_redis(message, tstamp)
+  $redis_log.set(message, tstamp)
 end
 
 def customer?(confirm)
@@ -205,7 +205,7 @@ def output_token(match, type, number)
   tstamp = Time.now.to_i
   cmatch = tokenize_customer("#{match}")
   message = match + ":" + number + ":" + type
-  log_to_redis(message)
+  log_to_redis(message, tstamp)
 
   # Offer various output formats
   #
