@@ -6,7 +6,7 @@ require 'sinatra'
   set :static, false
   set :static_cache_control, [:private, :max_age => 0]
   set :public_folder, 'public'
-  set :environment, :production
+  set :environment, :development
   set :server, %w[unicorn]
 
 require 'sinatra/multi_route'
@@ -125,6 +125,7 @@ def send_sms(cmatch, tstamp, number, expiration)
       to: number,
       text: cmatch
     })
+      json :sms_status => "sent", :token => cmatch, :token_url => token_url, :phone_number => number, :token_generated => tstamp, :token_expires => tstamp + expiration 
   rescue
     send_sms_twilio(cmatch, tstamp, number, expiration)
   end
