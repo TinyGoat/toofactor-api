@@ -125,7 +125,12 @@ def send_sms(cmatch, tstamp, number, expiration)
       to: number,
       text: cmatch
     })
-      json :sms_status => "sent", :token => cmatch, :token_url => token_url, :phone_number => number, :token_generated => tstamp, :token_expires => tstamp + expiration 
+      json :sms_status => "sent", 
+        :token => cmatch, 
+        :token_url => token_url, 
+        :phone_number => number, 
+        :token_generated => tstamp, 
+        :token_expires => tstamp + expiration 
   rescue
     send_sms_twilio(cmatch, tstamp, number, expiration)
   end
@@ -158,7 +163,12 @@ def send_sms_twilio(cmatch, tstamp, number, expiration)
       end
     else
       token_url = "error" if token_url.nil?
-      json :sms_status => response.to_s, :token => cmatch, :token_url => token_url, :phone_number => number, :token_generated => tstamp, :token_expires => tstamp + expiration 
+      json :sms_status => response.to_s, 
+        :token => cmatch, 
+        :token_url => token_url, 
+        :phone_number => number, 
+        :token_generated => tstamp, 
+        :token_expires => tstamp + expiration 
   end
 end
 
