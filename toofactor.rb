@@ -32,7 +32,7 @@ configure :production do
   $redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
     $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
     $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
-  $redis_log      = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+    $redis_log        = Redis::Namespace.new(:log, :redis => $redis)
 
   before do
     cache_control :nocache
@@ -54,7 +54,7 @@ configure :development do
   $redis = Redis.new(:host => "127.0.0.1", :port => 6379)
     $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
     $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
-  $redis_log = Redis.new(:host => "127.0.0.1", :port => 6379)
+    $redis_log        = Redis::Namespace.new(:log, :redis => $redis)
 
   error do
     'Sorry there was a nasty error - ' + env['sinatra.error'].name
