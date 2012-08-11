@@ -185,7 +185,10 @@ end
 def json_token(cmatch, tstamp, expiration)
   token_url     = create_token_url(cmatch, tstamp)
   token_expires = tstamp + expiration
-  json :auth => cmatch, :timestamp => tstamp, :expires => token_expires, :token_url => token_url
+  json :auth => cmatch, 
+    :timestamp => tstamp, 
+    :expires => token_expires, 
+    :token_url => token_url
 end
 
 def xml_token(cmatch, tstamp, expiration)
