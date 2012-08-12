@@ -102,6 +102,21 @@ def gen_hex
   prng.rand(15).to_s(base=16)
 end
 
+# Parse and correct phone numbers or throw an error
+#
+def parse_number(number)
+  match = number.to_s.strip.match(/^\+?(1?)[\s\.\-]*\(?([\d]{3})\)?[\s\-\.]*([\d]{3}[\s\-\.]{0,1}[\d]{4})$/)
+  
+  if match.nil? || match[3].match(/^555/)
+    raise ArgumentError.new("'#{number}' is not a valid phone number or is in the wrong format.")
+  end
+  
+  derp, country_code, area_code, phone_number = match.to_a
+  country_code = '1' if country_code == ''
+  
+  country_code + area_code + phone_number.gsub(/[^\d]/,'')
+end
+
 # Potentially set token length per customer
 #
 def tokenize(min, max, token)
@@ -249,12 +264,16 @@ end
 get '/api/*/*/*' do |*args|
   match, type, number = args
   
-  if (customer?(match))
-    number = "0" if number.empty?
-    output_token(match, type, number)
-  else
+  begin
+    if (customer?(match))
+      number = parse_number(number)
+      output_token(match, type, number)
+    else
+      halt 401, erb(:invalid_api)
+    end
+  rescue ArgumentError
     halt 401, erb(:invalid_api)
-  end
+  end 
 
 end
 
