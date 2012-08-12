@@ -29,7 +29,7 @@ configure :production do
   #
   ENV["REDISTOGO_URL"] = 'redis://redistogo:809165c597aee3f873f3a0776ba03cac@gar.redistogo.com:9163'
   uri = URI.parse(ENV["REDISTOGO_URL"])
-  $redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+  $redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password, :db => 16)
     $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
     $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
     $redis_log        = Redis::Namespace.new(:log, :redis => $redis)
@@ -52,7 +52,7 @@ configure :development do
   set :logging, true
   set :show_exceptions, true
 
-  $redis = Redis.new(:host => "127.0.0.1", :port => 6379)
+  $redis = Redis.new(:host => "127.0.0.1", :port => 6379, :db => 16)
     $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
     $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
     $redis_log        = Redis::Namespace.new(:log, :redis => $redis)
