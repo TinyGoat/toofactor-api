@@ -8,6 +8,7 @@ require 'sinatra'
   set :public_folder, 'public'
   set :environment, :development
   set :server, %w[unicorn]
+  set :protection
 
 require 'sinatra/multi_route'
 require 'sinatra/json'
