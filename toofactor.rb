@@ -52,7 +52,7 @@ configure :development do
   set :logging, true
   set :show_exceptions, true
 
-  $redis = Redis.new(:host => "127.0.0.1", :port => 6379, :db => 16)
+  $redis = Redis.new(:host => "127.0.0.1", :port => 6379, :db => 15)
     $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
     $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
     $redis_log        = Redis::Namespace.new(:log, :redis => $redis)
