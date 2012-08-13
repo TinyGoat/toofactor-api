@@ -245,6 +245,7 @@ def output_token(match, type, number)
   #
   case type
     when "sms"
+      number = parse_number(number)
       send_sms(cmatch, tstamp, number, 90)
     when "json"
       json_token(cmatch, tstamp, 90)
@@ -278,7 +279,6 @@ get '/api/*/*/*' do |*args|
   
   begin
     if (customer?(match))
-      number = parse_number(number)
       output_token(match, type, number)
     else
       halt 401, erb(:invalid_api)
