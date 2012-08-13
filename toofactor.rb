@@ -109,7 +109,6 @@ end
 # Generate random Hex
 #
 def gen_hex
-  # prng = Random.new
   prng = Crypt::ISAAC.new
   prng.rand(15).to_s(base=16)
 end
@@ -275,6 +274,7 @@ end
 # Produce token via API call
 #
 get '/api/*/*/*' do |*args|
+  
   match, type, number = args
   
   begin
