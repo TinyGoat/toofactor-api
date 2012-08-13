@@ -22,7 +22,7 @@ require 'crypt-isaac'
 require 'rack/throttle'
 
 configure :production do
-  use Rack::Throttle::Interval, :cache => Redis.new, :key_prefix => :throttle, :max => 600
+  use Rack::Throttle::Interval, :cache => Redis.new, :key_prefix => :throttle, :max => 6000
   set :dump_errors, false
   set :raise_errors, false
   set :logging, true
