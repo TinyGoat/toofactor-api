@@ -2,13 +2,13 @@
 #
 require 'sinatra'
   set :root, File.dirname(__FILE__)
-  set :sessions, false
+  set :sessions, true
   set :static, false
   set :static_cache_control, [:private, :max_age => 0]
   set :public_folder, 'public'
   set :environment, :development
   set :server, %w[unicorn]
-  set :protection
+
 
 require 'sinatra/multi_route'
 require 'sinatra/json'
@@ -22,7 +22,12 @@ require 'crypt-isaac'
 require 'rack/throttle'
 
 configure :production do
+  
+  use Rack::Protection
+  use Rack::Protection::EscapedParams
+  use Rack::Protection::AuthenticityToken
   use Rack::Throttle::Interval, :cache => Redis.new, :key_prefix => :throttle, :max => 6000
+  
   set :dump_errors, false
   set :raise_errors, false
   set :logging, true
@@ -53,6 +58,11 @@ configure :development do
   set :raise_errors, true
   set :logging, true
   set :show_exceptions, true
+  
+  use Rack::Protection
+  use Rack::Protection::EscapedParams
+  use Rack::Protection::AuthenticityToken
+  use Rack::Throttle::Interval, :cache => Redis.new, :key_prefix => :throttle, :max => 6000
 
   $redis = Redis.new(:host => "127.0.0.1", :port => 6379, :db => 15)
     $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)

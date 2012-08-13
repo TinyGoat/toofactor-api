@@ -18,6 +18,8 @@ GEM
       rack
     rack-test (0.6.1)
       rack (>= 1.0)
+    rack-throttle (0.3.0)
+      rack (>= 1.0.0)
     raindrops (0.10.0)
     redis (3.0.1)
     redis-namespace (1.2.1)
@@ -53,6 +55,8 @@ DEPENDENCIES
   crypt-isaac
   haml
   nexmo
+  rack-protection
+  rack-throttle
   redis
   redis-namespace
   shotgun
