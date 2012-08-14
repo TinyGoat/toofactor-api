@@ -272,7 +272,10 @@ end
 
 # Determine if a client URL/token is valid
 #
-get '/token/*/?', '/client/*/?', :provides => [:html, :text ] do |purl|
+get '/token/*/?', '/client/*/?', :provides => [:html, :text ] do |safe_purl|
+  
+  purl = safe_purl.match(/^\w{6}$/i)
+  
   if (client_purl?(purl))
     halt 202, erb(:valid)
   else
