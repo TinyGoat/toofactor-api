@@ -50,6 +50,11 @@ configure :production do
     redirect 'http://www.toofactor.com', 302
   end
 
+  def customer?(confirm)
+    confirm_customer = confirm.match(/^\w{64}$/i)
+    $redis_customer.get(confirm_customer) == "0"
+  end
+
 end
 
 configure :development do
@@ -73,6 +78,11 @@ configure :development do
   error do
     'Sorry there was a nasty error - ' + env['sinatra.error'].name
   end
+  
+  def customer?(confirm)
+    confirm_customer = confirm.match(/^\w+$/i)
+    $redis_customer.get(confirm_customer) == "0"
+  end
 
 end
 
@@ -87,10 +97,6 @@ end
 
 def log_totals(match)
   $redis_total.incr(match)
-end
-
-def customer?(confirm)
-  $redis_customer.get(confirm) == "0"
 end
 
 def client_purl?(purl)
@@ -116,6 +122,7 @@ end
 # Parse and correct phone numbers or throw an error
 #
 def parse_number(number)
+  
   match = number.to_s.strip.match(/^\+?(1?)[\s\.\-]*\(?([\d]{3})\)?[\s\-\.]*([\d]{3}[\s\-\.]{0,1}[\d]{4})$/)
   
   if match.nil? || match[3].match(/^555/)
@@ -242,7 +249,9 @@ def output_token(match, type, number)
 
   # Offer various output formats
   #
-  case type
+  safe_type = type.match(/\w{3,5}/i)
+
+  case safe_type
     when "sms"
       number = parse_number(number)
       send_sms(cmatch, tstamp, number, 90)
@@ -263,7 +272,7 @@ end
 
 # Determine if a client URL/token is valid
 #
-get '/token/*/?', '/client/*/?' do |purl|
+get '/token/*/?', '/client/*/?', :provides => [:html, :text ] do |purl|
   if (client_purl?(purl))
     halt 202, erb(:valid)
   else
@@ -273,7 +282,7 @@ end
 
 # Produce token via API call
 #
-get '/api/*/*/*' do |*args|
+get '/api/*/*/*', :provides => [:html, :text ] do |*args|
   
   match, type, number = args
   
