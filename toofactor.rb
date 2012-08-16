@@ -160,9 +160,9 @@ def send_sms(cmatch, tstamp, number, expiration)
     token_url = create_token_url(cmatch, tstamp)
     record_token(cmatch, tstamp, expiration)
     sms_primary_response = nexmo.send_message({
-                                                from: '13059298586',
-                                                to: number,
-                                                text: cmatch
+      from: '13059298586',
+      to: number,
+      text: cmatch
     })
     json :sms_status => "sent",
       :token => cmatch,
