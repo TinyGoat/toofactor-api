@@ -37,9 +37,9 @@ configure :production do
   ENV["REDISTOGO_URL"] = 'redis://redistogo:809165c597aee3f873f3a0776ba03cac@gar.redistogo.com:9163'
   uri = URI.parse(ENV["REDISTOGO_URL"])
   $redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
-  $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
-  $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
-  $redis_log        = Redis::Namespace.new(:log, :redis => $redis)
+    $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
+    $redis_token      = Redis::Namespace.new(:token, :redis => $redis)
+    $redis_log        = Redis::Namespace.new(:log, :redis => $redis)
   $redis_total      = Redis::Namespace.new(:count, :redis => $redis)
 
   before do
