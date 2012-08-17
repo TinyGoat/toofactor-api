@@ -26,7 +26,10 @@ configure :production do
   use Rack::Protection
   use Rack::Protection::EscapedParams
   use Rack::Protection::AuthenticityToken
-  use Rack::Throttle::Interval, :cache => Redis.new, :key_prefix => :throttle, :max => 6000
+  use Rack::Throttle::Interval, 
+    :cache => Redis.new, 
+    :key_prefix => :throttle, 
+    :max => 50
 
   set :dump_errors, false
   set :raise_errors, false
@@ -67,7 +70,10 @@ configure :development do
   use Rack::Protection
   use Rack::Protection::EscapedParams
   use Rack::Protection::AuthenticityToken
-  use Rack::Throttle::Interval, :cache => Redis.new, :key_prefix => :throttle, :max => 6000
+  use Rack::Throttle::Interval, 
+    :cache => Redis.new, 
+    :key_prefix => :throttle, 
+    :max => 6000
 
   $redis = Redis.new(:host => "127.0.0.1", :port => 6379, :db => 15)
   $redis_customer   = Redis::Namespace.new(:customer, :redis => $redis)
