@@ -182,8 +182,8 @@ def send_sms(cmatch, tstamp, number, expiration)
 end
 
 def send_sms_twilio(cmatch, tstamp, number, expiration)
-  account_sid = 'AC7cf1d4ccfee943d89892eadd0dbb255e'
-  auth_token = 'e32e80fd3d2bea9fe0133a410866189d'
+  account_sid = ''
+  auth_token = ''
   response = begin
     @client = Twilio::REST::Client.new account_sid, auth_token
     sms_token_status = @client.account.sms.messages.create(
